@@ -17,10 +17,18 @@ export default function FigmaCanvas() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+
   const canvasRef = useRef<HTMLDivElement>(null)
+
+  const [isPanning, setIsPanning] = useState(false)
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 })
+  
+
 
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target !== canvasRef.current) return
+    if (e.button !== 0) return
 
     const rect = canvasRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left
@@ -43,9 +51,14 @@ export default function FigmaCanvas() {
   }
 
   const handleMouseDown = (e: React.MouseEvent, id: string) => {
+    if (e.button !== 0) return
+
     e.stopPropagation()
     const box = textBoxes.find((b) => b.id === id)
     if (!box) return
+
+    const rect = canvasRef.current?.getBoundingClientRect()
+    if (!rect) return
 
     setSelectedId(id)
     setDraggingId(id)
@@ -55,23 +68,40 @@ export default function FigmaCanvas() {
     })
   }
 
+  const handleSpaceMove = (e: React.MouseEvent) => {
+    if (e.button === 2) { // Right click
+      e.preventDefault()
+      setIsPanning(true)
+      setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y })
+    }
+
+  }
+
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      if (!draggingId || !canvasRef.current) return
+      // Handle box dragging
+      if (draggingId && canvasRef.current) {
+        const rect = canvasRef.current.getBoundingClientRect()
+        const x = e.clientX - rect.left - dragOffset.x - panOffset.x
+        const y = e.clientY - rect.top - dragOffset.y - panOffset.y
 
-      const rect = canvasRef.current.getBoundingClientRect()
-      const x = e.clientX - rect.left - dragOffset.x + rect.left
-      const y = e.clientY - rect.top - dragOffset.y + rect.top
+        setTextBoxes((prev) => prev.map((box) => (box.id === draggingId ? { ...box, x, y } : box)))
+      }
 
-      setTextBoxes((prev) =>
-        prev.map((box) => (box.id === draggingId ? { ...box, x: Math.max(0, x), y: Math.max(0, y) } : box)),
-      )
+      // Handle panning
+      if (isPanning) {
+        setPanOffset({
+          x: e.clientX - panStart.x,
+          y: e.clientY - panStart.y,
+        })
+      }
     },
-    [draggingId, dragOffset],
+    [draggingId, dragOffset, isPanning, panStart],
   )
 
   const handleMouseUp = useCallback(() => {
     setDraggingId(null)
+    setIsPanning(false)
   }, [])
 
   const handleKeyDown = (e: React.KeyboardEvent, id: string) => {
@@ -83,6 +113,10 @@ export default function FigmaCanvas() {
     if (e.key === "Escape") {
       setSelectedId(null)
     }
+  }
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
   }
 
   useEffect(() => {
@@ -113,7 +147,9 @@ export default function FigmaCanvas() {
       <div
         ref={canvasRef}
         onClick={handleCanvasClick}
-        className="relative flex-1 cursor-crosshair overflow-auto"
+        onMouseDown={handleSpaceMove}
+        onContextMenu={handleContextMenu}
+        className={`relative flex-1 overflow-hidden ${isPanning ? 'cursor-grabbing' : 'overflow-auto'}`}
         style={{
           backgroundImage: "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
           backgroundSize: "20px 20px",
@@ -155,7 +191,9 @@ export default function FigmaCanvas() {
 
         {/* Empty state */}
         {textBoxes.length === 0 && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center" 
+          style={{ transform: `translate(-${panOffset.x}px, -${panOffset.y}px)` }}>
+            
             <div className="text-center">
               <div className="mb-2 text-4xl text-neutral-300 dark:text-neutral-600">+</div>
               <p className="text-sm text-neutral-400 dark:text-neutral-500">Click anywhere to start typing</p>
@@ -163,6 +201,7 @@ export default function FigmaCanvas() {
           </div>
         )}
       </div>
-    </div>
+    
+      </div>
   )
 }
