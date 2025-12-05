@@ -22,6 +22,11 @@ export default function FigmaCanvas() {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
   const [panStart, setPanStart] = useState({ x: 0, y: 0 })
 
+  const [zoomLevel, setZoomLevel] = useState(1)
+  const MIN_ZOOM = 0.1
+  const MAX_ZOOM = 5
+  const ZOOM_STEP = 0.25
+
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
     if (isPanning || e.button !== 0) return
     
@@ -33,8 +38,8 @@ export default function FigmaCanvas() {
     if (!canvasRef.current) return
   
     const rect = canvasRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left - panOffset.x
-    const y = e.clientY - rect.top - panOffset.y
+    const x = (e.clientX - rect.left - panOffset.x) / zoomLevel 
+    const y = (e.clientY - rect.top - panOffset.y) / zoomLevel
   
     const newBox: TextBox = {
       id: crypto.randomUUID(),
@@ -49,24 +54,44 @@ export default function FigmaCanvas() {
       return [...filtered, newBox]
     })
     
-    setSelectedId(prevId => {
-      if (!prevId) return newBox.id
-      
-      return newBox.id
-    })
+    setSelectedId(newBox.id)
+  }, [panOffset, isPanning, zoomLevel]) // Added zoomLevel dependency
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault()
     
-    setSelectedId(newBox.id) 
-  }, [panOffset, isPanning]) 
+    const rect = canvasRef.current?.getBoundingClientRect()
+    if (!rect) return
+    
+    // Get mouse position relative to canvas
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
+    
+    // Calculate mouse position in canvas coordinates (before zoom)
+    const canvasX = (mouseX - panOffset.x) / zoomLevel
+    const canvasY = (mouseY - panOffset.y) / zoomLevel
+    
+    // Adjust zoom based on wheel direction
+    const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP
+    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel + delta))
+    
+    // Calculate new pan offset to zoom toward mouse position
+    const newPanOffsetX = mouseX - canvasX * newZoom
+    const newPanOffsetY = mouseY - canvasY * newZoom
+    
+    setZoomLevel(newZoom)
+    setPanOffset({ x: newPanOffsetX, y: newPanOffsetY })
+  }, [zoomLevel, panOffset])
 
   const handleTextChange = useCallback((id: string, text: string) => {
     setTextBoxes((prev) => prev.map((box) => (box.id === id ? { ...box, text } : box)))
   }, [])
 
   const handleBoxDrag = useCallback((e: React.MouseEvent, id: string) => {
-    if (e.button !== 0) return
-
-    // e.stopPropagation() // Prevent canvas click event
-    // e.preventDefault() // Prevent text selection
+    if (e.button !== 0) return // Only left click for dragging boxes
+    
+    e.preventDefault()
+    e.stopPropagation()
     
     const box = textBoxes.find((b) => b.id === id)
     if (!box) return
@@ -77,13 +102,13 @@ export default function FigmaCanvas() {
     setSelectedId(id)
     setDraggingId(id)
     setDragOffset({
-      x: e.clientX - rect.left - box.x - panOffset.x,
-      y: e.clientY - rect.top - box.y - panOffset.y,
+      x: e.clientX - rect.left - (box.x * zoomLevel) - panOffset.x,
+      y: e.clientY - rect.top - (box.y * zoomLevel) - panOffset.y,
     })
-  }, [textBoxes, panOffset])
+  }, [textBoxes, zoomLevel, panOffset])
 
   const handleSpaceDrag = useCallback((e: React.MouseEvent) => {
-    // Only start panning on middle click (button 1) or right-click (button 2)
+    // Start panning on middle click (button 1) or right-click (button 2)
     if (e.button === 1 || e.button === 2) {
       e.preventDefault()
       e.stopPropagation()
@@ -101,8 +126,8 @@ export default function FigmaCanvas() {
       // Handle box dragging
       if (draggingId && canvasRef.current) {
         const rect = canvasRef.current.getBoundingClientRect()
-        const x = e.clientX - rect.left - dragOffset.x - panOffset.x
-        const y = e.clientY - rect.top - dragOffset.y - panOffset.y
+        const x = (e.clientX - rect.left - dragOffset.x - panOffset.x) / zoomLevel
+        const y = (e.clientY - rect.top - dragOffset.y - panOffset.y) / zoomLevel
 
         setTextBoxes((prev) => prev.map((box) => 
           box.id === draggingId ? { ...box, x, y } : box
@@ -118,8 +143,21 @@ export default function FigmaCanvas() {
         setPanOffset(newPanOffset)
       }
     },
-    [draggingId, dragOffset, isPanning, panStart, panOffset]
+    [draggingId, dragOffset, isPanning, panStart, zoomLevel, panOffset]
   )
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' && selectedId) {
+        e.preventDefault()
+        setTextBoxes((prev) => prev.filter((box) => box.id !== selectedId))
+        setSelectedId(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedId])
 
   const handleMouseUp = useCallback(() => {
     setDraggingId(null)
@@ -140,20 +178,6 @@ export default function FigmaCanvas() {
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
   }, [])
-
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Delete' && selectedId) {
-        e.preventDefault()
-        setTextBoxes((prev) => prev.filter((box) => box.id !== selectedId))
-        setSelectedId(null)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedId])
 
   useEffect(() => {
     const moveHandler = (e: MouseEvent) => handleMouseMove(e)
@@ -181,23 +205,10 @@ export default function FigmaCanvas() {
 
   // Reset panning on double-click canvas
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-    if (canvasRef.current && e.target === canvasRef.current) {
+    const target = e.target as HTMLElement
+    if (canvasRef.current && target === canvasRef.current) {
       setPanOffset({ x: 0, y: 0 })
-    }
-  }, [])
-
-  // Prevent default browser drag behavior
-  useEffect(() => {
-    const preventDefault = (e: DragEvent) => {
-      e.preventDefault()
-    }
-    
-    document.addEventListener('dragover', preventDefault)
-    document.addEventListener('drop', preventDefault)
-    
-    return () => {
-      document.removeEventListener('dragover', preventDefault)
-      document.removeEventListener('drop', preventDefault)
+      setZoomLevel(1)
     }
   }, [])
 
@@ -211,9 +222,6 @@ export default function FigmaCanvas() {
           </div>
           <span className="text-sm font-medium text-neutral-700">Text Canvas</span>
         </div>
-        <div className="text-xs text-neutral-500">
-          Click to add text • Drag to move • Backspace to delete empty • Right-click + drag to pan
-        </div>
       </div>
 
       {/* Canvas Container */}
@@ -222,8 +230,8 @@ export default function FigmaCanvas() {
         <div 
           className="absolute inset-0"
           style={{
-            backgroundImage: "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
+            // backgroundImage: "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
+            backgroundSize: `${20 * zoomLevel}px ${20 * zoomLevel}px`,
             backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
           }}
         />
@@ -234,20 +242,23 @@ export default function FigmaCanvas() {
           onClick={handleCanvasClick}
           onMouseDown={handleSpaceDrag}
           onDoubleClick={handleDoubleClick}
+          onWheel={handleWheel} // Added wheel handler
           onContextMenu={handleContextMenu}
           className={`absolute inset-0 ${isPanning ? "cursor-grabbing" : "cursor-crosshair"}`}
         >
-          {/* Text Boxes Container - moves with panning */}
+          {/* Text Boxes Container - moves with panning AND scales with zoom */}
           <div
             style={{
-              transform: `translate(${panOffset.x}px, ${panOffset.y}px)`,
+              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`, 
+              transformOrigin: '0 0',
               willChange: 'transform',
             }}
           >
             {textBoxes.map((box) => (
               <div
                 key={box.id}
-                className={`absolute ${draggingId === box.id ? "cursor-grabbing" : "cursor-move"}`}
+                data-box-id={box.id} // Added data attribute
+                className={`absolute text-box-container ${draggingId === box.id ? "cursor-grabbing" : "cursor-move"}`}
                 style={{
                   left: `${box.x}px`,
                   top: `${box.y}px`,
@@ -276,12 +287,13 @@ export default function FigmaCanvas() {
                     onChange={(e) => handleTextChange(box.id, e.target.value)}
                     onKeyDown={(e) => handleTextKeyDown(e, box.id)}
                     onFocus={() => setSelectedId(box.id)}
-                    onClick={(e) => e.stopPropagation()} // Prevent canvas click
                     placeholder="Type here..."
                     className="w-[200px] resize-none bg-transparent p-2 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none"
                     style={{ 
                       height: 'auto',
                       minHeight: '28px',
+                      transform: `scale(${1/zoomLevel})`,
+                      transformOrigin: '0 0',
                     }}
                     rows={1}
                     onInput={(e) => {
@@ -300,16 +312,19 @@ export default function FigmaCanvas() {
             <div 
               className="pointer-events-none absolute inset-0 flex items-center justify-center"
               style={{
-                transform: `translate(${panOffset.x}px, ${panOffset.y}px)`,
+                transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+                transformOrigin: '0 0',
               }}
             >
               <div className="text-center">
                 <div className="mb-4 text-5xl text-neutral-300">+</div>
                 <p className="text-lg text-neutral-500">Click anywhere to add a text box</p>
                 <div className="mt-4 text-sm text-neutral-400">
+                  <p>• Scroll wheel to zoom in/out</p>
                   <p>• Right-click + drag to pan the canvas</p>
                   <p>• Double-click canvas to reset view</p>
                   <p>• Press Delete to remove selected box</p>
+                  <p>• Ctrl + 0 to reset zoom</p>
                 </div>
               </div>
             </div>
@@ -318,21 +333,26 @@ export default function FigmaCanvas() {
           {/* Panning indicator */}
           {isPanning && (
             <div className="pointer-events-none fixed bottom-4 right-4 rounded bg-black/80 px-3 py-2 text-xs text-white">
-              Panning mode - Release right click to stop
+              Panning mode - Release to stop
             </div>
           )}
+          
+          {/* Zoom indicator */}
+          <div className="pointer-events-none fixed bottom-4 left-4 rounded bg-black/80 px-3 py-2 text-xs text-white">
+            Zoom: {Math.round(zoomLevel * 100)}%
+          </div>
         </div>
       </div>
 
       {/* Status bar */}
-      <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-1 text-xs text-neutral-500">
+      {/* <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-1 text-xs text-neutral-500">
         <div>
           {selectedId ? `Selected box at (${textBoxes.find(b => b.id === selectedId)?.x.toFixed(0)}, ${textBoxes.find(b => b.id === selectedId)?.y.toFixed(0)})` : 'No selection'}
         </div>
         <div>
-          Boxes: {textBoxes.length} | Pan offset: ({panOffset.x.toFixed(0)}, {panOffset.y.toFixed(0)})
+          Boxes: {textBoxes.length} | Zoom: {Math.round(zoomLevel * 100)}% | Pan: ({panOffset.x.toFixed(0)}, {panOffset.y.toFixed(0)})
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }
