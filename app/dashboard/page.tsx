@@ -23,19 +23,19 @@ export default function FigmaCanvas() {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 })
 
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
-    // Only handle left clicks
-    if (e.target !== canvasRef.current) return
-    if (e.button !== 0) return
+    if (isPanning || e.button !== 0) return
     
-    // Don't create new box if clicking on existing element that's not the canvas
-    if (!canvasRef.current || e.target !== canvasRef.current) return
-
+    const target = e.target as HTMLElement
+    if (target.closest('.text-box-container') || target.tagName === 'TEXTAREA') {
+      return
+    }
+    
+    if (!canvasRef.current) return
+  
     const rect = canvasRef.current.getBoundingClientRect()
-    
-    // Calculate position relative to canvas, accounting for panning
     const x = e.clientX - rect.left - panOffset.x
     const y = e.clientY - rect.top - panOffset.y
-
+  
     const newBox: TextBox = {
       id: crypto.randomUUID(),
       x,
@@ -43,16 +43,26 @@ export default function FigmaCanvas() {
       text: "",
       width: 200,
     }
-
-    setTextBoxes((prev) => [...prev, newBox])
-    setSelectedId(newBox.id)
-  }, [panOffset])
+  
+    setTextBoxes(prev => {
+      const filtered = prev.filter(box => box.text.trim() !== "")
+      return [...filtered, newBox]
+    })
+    
+    setSelectedId(prevId => {
+      if (!prevId) return newBox.id
+      
+      return newBox.id
+    })
+    
+    setSelectedId(newBox.id) 
+  }, [panOffset, isPanning]) 
 
   const handleTextChange = useCallback((id: string, text: string) => {
     setTextBoxes((prev) => prev.map((box) => (box.id === id ? { ...box, text } : box)))
   }, [])
 
-  const handleMouseDown = useCallback((e: React.MouseEvent, id: string) => {
+  const handleBoxDrag = useCallback((e: React.MouseEvent, id: string) => {
     if (e.button !== 0) return
 
     // e.stopPropagation() // Prevent canvas click event
@@ -72,7 +82,7 @@ export default function FigmaCanvas() {
     })
   }, [textBoxes, panOffset])
 
-  const handlePanStart = useCallback((e: React.MouseEvent) => {
+  const handleSpaceDrag = useCallback((e: React.MouseEvent) => {
     // Only start panning on middle click (button 1) or right-click (button 2)
     if (e.button === 1 || e.button === 2) {
       e.preventDefault()
@@ -222,7 +232,7 @@ export default function FigmaCanvas() {
         <div
           ref={canvasRef}
           onClick={handleCanvasClick}
-          onMouseDown={handlePanStart}
+          onMouseDown={handleSpaceDrag}
           onDoubleClick={handleDoubleClick}
           onContextMenu={handleContextMenu}
           className={`absolute inset-0 ${isPanning ? "cursor-grabbing" : "cursor-crosshair"}`}
@@ -247,7 +257,7 @@ export default function FigmaCanvas() {
                 }}
               >
                 <div
-                  onMouseDown={(e) => handleMouseDown(e, box.id)}
+                  onMouseDown={(e) => handleBoxDrag(e, box.id)}
                   className={`group relative rounded border bg-white shadow-sm ${
                     selectedId === box.id 
                       ? "border-blue-500 shadow-md shadow-blue-500/30" 
