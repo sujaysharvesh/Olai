@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback, useDeferredValue } from "react"
 
 interface TextBox {
   id: string
@@ -83,11 +83,18 @@ export default function FigmaCanvas() {
     setPanOffset({ x: newPanOffsetX, y: newPanOffsetY })
   }, [zoomLevel, panOffset])
 
-  const handleTextChange = useCallback((id: string, text: string) => {
+   const handleTextChange = useCallback((id: string, text: string) => {
     setTextBoxes((prev) => prev.map((box) => (box.id === id ? { ...box, text } : box)))
   }, [])
 
   const handleBoxDrag = useCallback((e: React.MouseEvent, id: string) => {
+    // If clicking on textarea, don't start dragging - allow text selection
+    if ((e.target as HTMLElement).tagName === 'TEXTAREA') {
+      // Just select the box, don't start dragging
+      setSelectedId(id)
+      return
+    }
+    
     if (e.button !== 0) return // Only left click for dragging boxes
     
     e.preventDefault()
@@ -95,10 +102,10 @@ export default function FigmaCanvas() {
     
     const box = textBoxes.find((b) => b.id === id)
     if (!box) return
-
+  
     const rect = canvasRef.current?.getBoundingClientRect()
     if (!rect) return
-
+  
     setSelectedId(id)
     setDraggingId(id)
     setDragOffset({
@@ -146,18 +153,17 @@ export default function FigmaCanvas() {
     [draggingId, dragOffset, isPanning, panStart, zoomLevel, panOffset]
   )
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Delete' && selectedId) {
-        e.preventDefault()
-        setTextBoxes((prev) => prev.filter((box) => box.id !== selectedId))
-        setSelectedId(null)
-      }
-    }
+  const zoomIn = useCallback(() => {
+    setZoomLevel(prev => Math.min(MAX_ZOOM, prev + ZOOM_STEP))
+  }, [])
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedId])
+  const zoomOut = useCallback(() => {
+    setZoomLevel(prev => Math.max(MIN_ZOOM, prev - ZOOM_STEP))
+  }, [])
+
+  const resetZoom = useCallback(() => {
+    setZoomLevel(1)
+  }, [])
 
   const handleMouseUp = useCallback(() => {
     setDraggingId(null)
@@ -178,6 +184,31 @@ export default function FigmaCanvas() {
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
   }, [])
+
+  const calculateFontSize = (baseSize: number) => {
+    const calculated = baseSize 
+    // Limit between 8px and 32px for readability
+    return Math.max(8, Math.min(32, calculated))
+  }
+  
+  const calculateMinHeight = (baseHeight: number) => {
+    const calculated = baseHeight 
+    // Limit between 20px and 80px
+    return Math.max(20, Math.min(80, calculated))
+  }
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' && selectedId) {
+        e.preventDefault()
+        setTextBoxes((prev) => prev.filter((box) => box.id !== selectedId))
+        setSelectedId(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedId])
 
   useEffect(() => {
     const moveHandler = (e: MouseEvent) => handleMouseMove(e)
@@ -249,7 +280,7 @@ export default function FigmaCanvas() {
           {/* Text Boxes Container - moves with panning AND scales with zoom */}
           <div
             style={{
-              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`, 
+              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`, // Added scale
               transformOrigin: '0 0',
               willChange: 'transform',
             }}
@@ -290,10 +321,11 @@ export default function FigmaCanvas() {
                     placeholder="Type here..."
                     className="w-[200px] resize-none bg-transparent p-2 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none"
                     style={{ 
+                      width: '100%', // Fill parent width
                       height: 'auto',
-                      minHeight: '28px',
-                      transform: `scale(${1/zoomLevel})`,
-                      transformOrigin: '0 0',
+                      minHeight: `${calculateMinHeight(28)}px`,
+                      fontSize: `${calculateFontSize(14)}px`,
+                      lineHeight: '1.5',
                     }}
                     rows={1}
                     onInput={(e) => {
