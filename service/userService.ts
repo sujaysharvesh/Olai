@@ -29,6 +29,21 @@ export async function registerUser(
     return await registerUserQuery(username, email, hashedPassword);
 }
 
+export async function loginUser(email: string, password: string) {
+
+    const user = await getUserByEmail(email);
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    const isPasswordValid = await comparePasswordFunc(password, user.password);
+    if (!isPasswordValid) {
+        throw new Error("Invalid password");
+    }
+
+    return user;
+
+}
 
 export async function hashPasswordFunc(password: string) {
 

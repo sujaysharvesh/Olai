@@ -20,7 +20,7 @@ export async function registerUserQuery(
 
 export async function getUserByEmail(email: string) {
     const result = await pool.query(
-        `SELECT id, email FROM users WHERE email = $1`,
+        `SELECT id, email, password FROM users WHERE email = $1`,
         [email]
     );
 
