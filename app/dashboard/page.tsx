@@ -8,6 +8,7 @@ import {
   useDeferredValue,
 } from "react";
 import ThemeToggle from "../component/ThemeToggle";
+import TextBox from "../component/TextBoxProp";
 
 interface TextBox {
   id: string;
@@ -325,60 +326,73 @@ export default function FigmaCanvas() {
             }}
           >
             {textBoxes.map((box) => (
-              <div
-                key={box.id}
-                data-box-id={box.id}
-                className={`absolute text-box-container ${
-                  draggingId === box.id ? "cursor-grabbing" : "cursor-move"
-                }`}
-                style={{
-                  left: `${box.x}px`,
-                  top: `${box.y}px`,
-                  transform: draggingId === box.id ? "scale(1.02)" : "none",
-                  transition:
-                    draggingId === box.id ? "none" : "transform 0.1s ease",
-                  zIndex: selectedId === box.id ? 10 : 1,
-                }}
-              >
-                <div
-                  onMouseDown={(e) => handleBoxDrag(e, box.id)}
-                  className={`group relative rounded border bg-white dark:bg-[#57595B] shadow-sm ${
-                    selectedId === box.id
-                      ? "border-gray-200 shadow-md"
-                      : "border-neutral-300 dark:border-gray-600 hover:border-blue-300"
-                  }`}
-                >
-                  {/* Selection indicator */}
-                  {/* {selectedId === box.id && (
-                    <div className="absolute -left-2 -top-2 h-4 w-4 border-2 border-white dark:border-gray-800 shadow" />
-                  )} */}
+              <TextBox
+              key={box.id}
+              id={box.id}
+              x={box.x}
+              y={box.y}
+              text={box.text}
+              isSelected={selectedId === box.id}
+              isDragging={draggingId === box.id}
+              onMouseDown={handleBoxDrag}
+              onTextChange={handleTextChange}
+              onTextKeyDown={handleTextKeyDown}
+              onFocus={setSelectedId}
+            />
+              // <div
+              //   key={box.id}
+              //   data-box-id={box.id}
+              //   className={`absolute text-box-container ${
+              //     draggingId === box.id ? "cursor-grabbing" : "cursor-move"
+              //   }`}
+              //   style={{
+              //     left: `${box.x}px`,
+              //     top: `${box.y}px`,
+              //     transform: draggingId === box.id ? "scale(1.02)" : "none",
+              //     transition:
+              //       draggingId === box.id ? "none" : "transform 0.1s ease",
+              //     zIndex: selectedId === box.id ? 10 : 1,
+              //   }}
+              // >
+              //   <div
+              //     onMouseDown={(e) => handleBoxDrag(e, box.id)}
+              //     className={`group relative rounded border bg-white dark:bg-[#57595B] shadow-sm ${
+              //       selectedId === box.id
+              //         ? "border-gray- shadow-md"
+              //         : "border-neutral-300 dark:border-gray-600 hover:border-blue-300"
+              //     }`}
+              //   >
+              //     {/* Selection indicator */}
+              //     {/* {selectedId === box.id && (
+              //       <div className="absolute -left-2 -top-2 h-4 w-4 border-2 border-white dark:border-gray-800 shadow" />
+              //     )} */}
 
-                  <textarea
-                    data-box-id={box.id}
-                    autoFocus={selectedId === box.id}
-                    value={box.text}
-                    onChange={(e) => handleTextChange(box.id, e.target.value)}
-                    onKeyDown={(e) => handleTextKeyDown(e, box.id)}
-                    onFocus={() => setSelectedId(box.id)}
-                    placeholder="Type here..."
-                    className="w-[200px] resize-none bg-transparent p-2 text-sm text-neutral-800 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-gray-500 focus:outline-none"
-                    style={{
-                      width: "100%",
-                      height: "auto",
-                      minHeight: `${calculateMinHeight(28)}px`,
-                      fontSize: `${calculateFontSize(14)}px`,
-                      lineHeight: "1.5",
-                    }}
-                    rows={1}
-                    onInput={(e) => {
-                      const target = e.target as HTMLTextAreaElement;
-                      target.style.height = "auto";
-                      target.style.height =
-                        Math.max(28, target.scrollHeight) + "px";
-                    }}
-                  />
-                </div>
-              </div>
+              //     <textarea
+              //       data-box-id={box.id}
+              //       autoFocus={selectedId === box.id}
+              //       value={box.text}
+              //       onChange={(e) => handleTextChange(box.id, e.target.value)}
+              //       onKeyDown={(e) => handleTextKeyDown(e, box.id)}
+              //       onFocus={() => setSelectedId(box.id)}
+              //       placeholder="Type here..."
+              //       className="w-[200px] resize-none bg-transparent p-2 text-sm text-neutral-800 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-gray-500 focus:outline-none"
+              //       style={{
+              //         width: "100%",
+              //         height: "auto",
+              //         minHeight: `${calculateMinHeight(28)}px`,
+              //         fontSize: `${calculateFontSize(14)}px`,
+              //         lineHeight: "1.5",
+              //       }}
+              //       rows={1}
+              //       onInput={(e) => {
+              //         const target = e.target as HTMLTextAreaElement;
+              //         target.style.height = "auto";
+              //         target.style.height =
+              //           Math.max(28, target.scrollHeight) + "px";
+              //       }}
+              //     />
+              //   </div>
+              // </div>
             ))}
           </div>
 
