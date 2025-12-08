@@ -7,8 +7,8 @@ import {
   useCallback,
   useDeferredValue,
 } from "react";
-import ThemeToggle from "../component/ThemeToggle";
-import TextBox from "../component/TextBoxProp";
+import ThemeToggle from "../components/ThemeToggle";
+import TextBox from "../components/TextBoxProp";
 
 interface TextBox {
   id: string;
@@ -278,172 +278,200 @@ export default function FigmaCanvas() {
     }
   }, []);
 
+  // return (
+  //   <div className="flex h-screen flex-col">
+  //     {/* Toolbar */}
+  //     <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-2">
+  //       <div className="flex items-center gap-2">
+  //         <div className="flex h-8 w-8 items-center justify-center rounded bg-blue-500 text-sm font-bold text-white">
+  //           T
+  //         </div>
+  //         <span className="text-sm font-medium text-neutral-700">
+  //           Text Canvas
+  //         </span>
+  //       </div>
+  //       <ThemeToggle />
+  //     </div>
+
+  //     {/* Canvas Container */}
+  //     <div className="relative flex-1 overflow-hidden">
+  //       {/* Background Grid - Separate from interactive layer */}
+  //       <div
+  //         className="absolute inset-0"
+  //         style={{
+  //           // backgroundImage: "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
+  //           backgroundSize: `${20 * zoomLevel}px ${20 * zoomLevel}px`,
+  //           backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
+  //         }}
+  //       />
+
+  //       {/* Interactive Canvas Layer */}
+  //       <div
+  //         ref={canvasRef}
+  //         onClick={handleCanvasClick}
+  //         onMouseDown={handleSpaceDrag}
+  //         onDoubleClick={handleDoubleClick}
+  //         onWheel={handleWheel} // Added wheel handler
+  //         onContextMenu={handleContextMenu}
+  //         className={`absolute inset-0 ${
+  //           isPanning ? "cursor-grabbing" : "cursor-crosshair"
+  //         }`}
+  //       >
+  //         {/* Text Boxes Container - moves with panning AND scales with zoom */}
+  //         <div
+  //           style={{
+  //             transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+  //             transformOrigin: "0 0",
+  //             willChange: "transform",
+  //           }}
+  //         >
+  //           {textBoxes.map((box) => (
+  //             <TextBox
+  //             key={box.id}
+  //             id={box.id}
+  //             x={box.x}
+  //             y={box.y}
+  //             text={box.text}
+  //             isSelected={selectedId === box.id}
+  //             isDragging={draggingId === box.id}
+  //             onMouseDown={handleBoxDrag}
+  //             onTextChange={handleTextChange}
+  //             onTextKeyDown={handleTextKeyDown}
+  //             onFocus={setSelectedId}
+  //           />
+  //             // <div
+  //             //   key={box.id}
+  //             //   data-box-id={box.id}
+  //             //   className={`absolute text-box-container ${
+  //             //     draggingId === box.id ? "cursor-grabbing" : "cursor-move"
+  //             //   }`}
+  //             //   style={{
+  //             //     left: `${box.x}px`,
+  //             //     top: `${box.y}px`,
+  //             //     transform: draggingId === box.id ? "scale(1.02)" : "none",
+  //             //     transition:
+  //             //       draggingId === box.id ? "none" : "transform 0.1s ease",
+  //             //     zIndex: selectedId === box.id ? 10 : 1,
+  //             //   }}
+  //             // >
+  //             //   <div
+  //             //     onMouseDown={(e) => handleBoxDrag(e, box.id)}
+  //             //     className={`group relative rounded border bg-white dark:bg-[#57595B] shadow-sm ${
+  //             //       selectedId === box.id
+  //             //         ? "border-gray- shadow-md"
+  //             //         : "border-neutral-300 dark:border-gray-600 hover:border-blue-300"
+  //             //     }`}
+  //             //   >
+  //             //     {/* Selection indicator */}
+  //             //     {/* {selectedId === box.id && (
+  //             //       <div className="absolute -left-2 -top-2 h-4 w-4 border-2 border-white dark:border-gray-800 shadow" />
+  //             //     )} */}
+
+  //             //     <textarea
+  //             //       data-box-id={box.id}
+  //             //       autoFocus={selectedId === box.id}
+  //             //       value={box.text}
+  //             //       onChange={(e) => handleTextChange(box.id, e.target.value)}
+  //             //       onKeyDown={(e) => handleTextKeyDown(e, box.id)}
+  //             //       onFocus={() => setSelectedId(box.id)}
+  //             //       placeholder="Type here..."
+  //             //       className="w-[200px] resize-none bg-transparent p-2 text-sm text-neutral-800 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-gray-500 focus:outline-none"
+  //             //       style={{
+  //             //         width: "100%",
+  //             //         height: "auto",
+  //             //         minHeight: `${calculateMinHeight(28)}px`,
+  //             //         fontSize: `${calculateFontSize(14)}px`,
+  //             //         lineHeight: "1.5",
+  //             //       }}
+  //             //       rows={1}
+  //             //       onInput={(e) => {
+  //             //         const target = e.target as HTMLTextAreaElement;
+  //             //         target.style.height = "auto";
+  //             //         target.style.height =
+  //             //           Math.max(28, target.scrollHeight) + "px";
+  //             //       }}
+  //             //     />
+  //             //   </div>
+  //             // </div>
+  //           ))}
+  //         </div>
+
+  //         {/* Empty state */}
+  //         {textBoxes.length === 0 && (
+  //           <div
+  //             className="pointer-events-none absolute inset-0 flex items-center justify-center"
+  //             style={{
+  //               transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+  //               transformOrigin: "0 0",
+  //             }}
+  //           >
+  //             <div className="text-center">
+  //               <div className="mb-4 text-5xl text-neutral-300">+</div>
+  //               <p className="text-lg text-neutral-500">
+  //                 Click anywhere to add a text box
+  //               </p>
+  //               <div className="mt-4 text-sm text-neutral-400">
+  //                 <p>• Scroll wheel to zoom in/out</p>
+  //                 <p>• Right-click + drag to pan the canvas</p>
+  //                 <p>• Double-click canvas to reset view</p>
+  //                 <p>• Press Delete to remove selected box</p>
+  //                 <p>• Ctrl + 0 to reset zoom</p>
+  //               </div>
+  //             </div>
+  //           </div>
+  //         )}
+
+  //         {/* Panning indicator */}
+  //         {isPanning && (
+  //           <div className="pointer-events-none fixed bottom-4 right-4 rounded bg-black/80 px-3 py-2 text-xs text-white">
+  //             Panning mode - Release to stop
+  //           </div>
+  //         )}
+
+  //         {/* Zoom indicator */}
+  //         <div className="pointer-events-none fixed bottom-4 left-4 rounded bg-black/80 px-3 py-2 text-xs text-white">
+  //           Zoom: {Math.round(zoomLevel * 100)}%
+  //         </div>
+  //       </div>
+  //     </div>
+
+  //     {/* Status bar */}
+  //     {/* <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-1 text-xs text-neutral-500">
+  //       <div>
+  //         {selectedId ? `Selected box at (${textBoxes.find(b => b.id === selectedId)?.x.toFixed(0)}, ${textBoxes.find(b => b.id === selectedId)?.y.toFixed(0)})` : 'No selection'}
+  //       </div>
+  //       <div>
+  //         Boxes: {textBoxes.length} | Zoom: {Math.round(zoomLevel * 100)}% | Pan: ({panOffset.x.toFixed(0)}, {panOffset.y.toFixed(0)})
+  //       </div>
+  //     </div> */}
+  //   </div>
+  // );
+
   return (
-    <div className="flex h-screen flex-col">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-2">
+    <div className="flex h-full flex-col bg-neutral-100 dark:bg-neutral-900">
+      <div className="flex items-center justify-between border-b-2 border-neutral-200 bg-white px-4 py-2 dark:border-neutral-700 dark:bg-neutral-800">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-blue-500 text-sm font-bold text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-amber-500 text-sm font-bold text-white">
             T
           </div>
-          <span className="text-sm font-medium text-neutral-700">
-            Text Canvas
+          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+            Text Space
           </span>
         </div>
-        <ThemeToggle />
       </div>
-
-      {/* Canvas Container */}
-      <div className="relative flex-1 overflow-hidden">
-        {/* Background Grid - Separate from interactive layer */}
-        <div
-          className="absolute inset-0"
-          style={{
-            // backgroundImage: "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
-            backgroundSize: `${20 * zoomLevel}px ${20 * zoomLevel}px`,
-            backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
-          }}
-        />
-
-        {/* Interactive Canvas Layer */}
-        <div
-          ref={canvasRef}
-          onClick={handleCanvasClick}
-          onMouseDown={handleSpaceDrag}
-          onDoubleClick={handleDoubleClick}
-          onWheel={handleWheel} // Added wheel handler
-          onContextMenu={handleContextMenu}
-          className={`absolute inset-0 ${
-            isPanning ? "cursor-grabbing" : "cursor-crosshair"
-          }`}
-        >
-          {/* Text Boxes Container - moves with panning AND scales with zoom */}
-          <div
-            style={{
-              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
-              transformOrigin: "0 0",
-              willChange: "transform",
-            }}
-          >
-            {textBoxes.map((box) => (
-              <TextBox
-              key={box.id}
-              id={box.id}
-              x={box.x}
-              y={box.y}
-              text={box.text}
-              isSelected={selectedId === box.id}
-              isDragging={draggingId === box.id}
-              onMouseDown={handleBoxDrag}
-              onTextChange={handleTextChange}
-              onTextKeyDown={handleTextKeyDown}
-              onFocus={setSelectedId}
-            />
-              // <div
-              //   key={box.id}
-              //   data-box-id={box.id}
-              //   className={`absolute text-box-container ${
-              //     draggingId === box.id ? "cursor-grabbing" : "cursor-move"
-              //   }`}
-              //   style={{
-              //     left: `${box.x}px`,
-              //     top: `${box.y}px`,
-              //     transform: draggingId === box.id ? "scale(1.02)" : "none",
-              //     transition:
-              //       draggingId === box.id ? "none" : "transform 0.1s ease",
-              //     zIndex: selectedId === box.id ? 10 : 1,
-              //   }}
-              // >
-              //   <div
-              //     onMouseDown={(e) => handleBoxDrag(e, box.id)}
-              //     className={`group relative rounded border bg-white dark:bg-[#57595B] shadow-sm ${
-              //       selectedId === box.id
-              //         ? "border-gray- shadow-md"
-              //         : "border-neutral-300 dark:border-gray-600 hover:border-blue-300"
-              //     }`}
-              //   >
-              //     {/* Selection indicator */}
-              //     {/* {selectedId === box.id && (
-              //       <div className="absolute -left-2 -top-2 h-4 w-4 border-2 border-white dark:border-gray-800 shadow" />
-              //     )} */}
-
-              //     <textarea
-              //       data-box-id={box.id}
-              //       autoFocus={selectedId === box.id}
-              //       value={box.text}
-              //       onChange={(e) => handleTextChange(box.id, e.target.value)}
-              //       onKeyDown={(e) => handleTextKeyDown(e, box.id)}
-              //       onFocus={() => setSelectedId(box.id)}
-              //       placeholder="Type here..."
-              //       className="w-[200px] resize-none bg-transparent p-2 text-sm text-neutral-800 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-gray-500 focus:outline-none"
-              //       style={{
-              //         width: "100%",
-              //         height: "auto",
-              //         minHeight: `${calculateMinHeight(28)}px`,
-              //         fontSize: `${calculateFontSize(14)}px`,
-              //         lineHeight: "1.5",
-              //       }}
-              //       rows={1}
-              //       onInput={(e) => {
-              //         const target = e.target as HTMLTextAreaElement;
-              //         target.style.height = "auto";
-              //         target.style.height =
-              //           Math.max(28, target.scrollHeight) + "px";
-              //       }}
-              //     />
-              //   </div>
-              // </div>
-            ))}
-          </div>
-
-          {/* Empty state */}
-          {textBoxes.length === 0 && (
-            <div
-              className="pointer-events-none absolute inset-0 flex items-center justify-center"
-              style={{
-                transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
-                transformOrigin: "0 0",
-              }}
-            >
-              <div className="text-center">
-                <div className="mb-4 text-5xl text-neutral-300">+</div>
-                <p className="text-lg text-neutral-500">
-                  Click anywhere to add a text box
-                </p>
-                <div className="mt-4 text-sm text-neutral-400">
-                  <p>• Scroll wheel to zoom in/out</p>
-                  <p>• Right-click + drag to pan the canvas</p>
-                  <p>• Double-click canvas to reset view</p>
-                  <p>• Press Delete to remove selected box</p>
-                  <p>• Ctrl + 0 to reset zoom</p>
-                </div>
-              </div>
+      <div className="relative flex-1 overflow-auto">
+        
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="mb-2 text-4xl text-neutral-300 dark:text-neutral-600">
+              +
             </div>
-          )}
-
-          {/* Panning indicator */}
-          {isPanning && (
-            <div className="pointer-events-none fixed bottom-4 right-4 rounded bg-black/80 px-3 py-2 text-xs text-white">
-              Panning mode - Release to stop
-            </div>
-          )}
-
-          {/* Zoom indicator */}
-          <div className="pointer-events-none fixed bottom-4 left-4 rounded bg-black/80 px-3 py-2 text-xs text-white">
-            Zoom: {Math.round(zoomLevel * 100)}%
+            <p className="text-sm text-neutral-400 dark:text-neutral-500">
+              Click anywhere to add a note
+            </p>
           </div>
         </div>
       </div>
-
-      {/* Status bar */}
-      {/* <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-1 text-xs text-neutral-500">
-        <div>
-          {selectedId ? `Selected box at (${textBoxes.find(b => b.id === selectedId)?.x.toFixed(0)}, ${textBoxes.find(b => b.id === selectedId)?.y.toFixed(0)})` : 'No selection'}
-        </div>
-        <div>
-          Boxes: {textBoxes.length} | Zoom: {Math.round(zoomLevel * 100)}% | Pan: ({panOffset.x.toFixed(0)}, {panOffset.y.toFixed(0)})
-        </div>
-      </div> */}
     </div>
   );
 }

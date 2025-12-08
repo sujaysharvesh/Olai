@@ -152,7 +152,7 @@ export default function TextBox({
           onKeyDown={(e) => onTextKeyDown(e, id)}
           onFocus={() => onFocus(id)}
           placeholder="Type here..."
-          className="resize-none bg-transparent p-2 text-sm text-neutral-800 dark:text-gray-900 placeholder:text-neutral-400 dark:placeholder:text-gray-500 focus:outline-none"
+          className="resize-none bg-transparent p-2 text-sm text-neutral-800 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-gray-500 focus:outline-none"
           style={{
             width: "100%",
             height: `${boxHeight}px`,
@@ -170,7 +170,7 @@ export default function TextBox({
         
         {/* Show character count when approaching limit */}
         {text.length > MAX_CHARS * 0.8 && (
-          <div className="absolute bottom-1 right-1 text-xs text-gray-500 bg-white/90 px-1.5 py-0.5 rounded border border-gray-200">
+          <div className="absolute bottom-1 right-1 text-xs text-gray-500 bg-white/90 dark:bg-gray-800/90 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-600">
             {text.length}/{MAX_CHARS}
           </div>
         )}
