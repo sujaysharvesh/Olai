@@ -364,10 +364,13 @@ export default function CombinedCanvas() {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage:
-              "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
+            // backgroundImage:
+            //   "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
             backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
             backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
+            transform: `scale(${zoom})`,
+            width: `${100 / zoom}%`,
+            height: `${100 / zoom}%`,
           }}
         />
 
@@ -422,13 +425,13 @@ export default function CombinedCanvas() {
                     className="absolute bottom-0 right-0 h-4 w-4 cursor-se-resize opacity-50 hover:opacity-100 transition-opacity"
                     onMouseDown={(e) => handleResizeMouseDown(e, box.id)}
                   >
-                    <svg
+                    {/* <svg
                       viewBox="0 0 16 16"
                       className="h-4 w-4 text-neutral-400"
                       fill="currentColor"
                     >
                       <path d="M14 14H12V12H14V14ZM14 10H12V8H14V10ZM10 14H8V12H10V14ZM14 6H12V4H14V6ZM10 10H8V8H10V10ZM6 14H4V12H6V14Z" />
-                    </svg>
+                    </svg> */}
                   </div>
                 )}
               </div>
@@ -490,16 +493,16 @@ export default function CombinedCanvas() {
       {/* Edit Popover */}
       {editingId && editingBox && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={closePopover}
         >
           <div
-            className="relative w-full max-w-md mx-4 rounded-xl bg-white p-4 shadow-2xl dark:bg-neutral-800"
+            className="relative w-full max-w-2xl mx-4 rounded-xl bg-white p-6 shadow-2xl dark:bg-neutral-800"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={closePopover}
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-neutral-200"
+              className="absolute right-3 top-3 bg-slate-100 flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-neutral-200"
             >
               ✕
             </button>
@@ -509,7 +512,7 @@ export default function CombinedCanvas() {
               onChange={(e) => handleTextChange(editingId, e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Type your note here..."
-              className="min-h-[200px] w-full resize-none bg-transparent text-base text-neutral-800 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
+              className="min-h-[300px] w-full resize-none bg-transparent text-base text-neutral-800 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
             />
             <div className="mt-2 flex items-center justify-between border-t border-neutral-200 pt-3 dark:border-neutral-700">
               <span className="text-xs text-neutral-400">
