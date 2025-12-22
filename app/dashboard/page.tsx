@@ -7,6 +7,9 @@ import TextBox from "../components/TextBoxProp";
 import { useRouter } from "next/navigation";
 import Logout from "../components/LogoutButton";
 import { NoteSync } from "./noteSync";
+import { fetchNotes } from "./fetchNotes";
+import { User } from "@/utils/types";
+import fetchUser from "./fetchUser";
 
 interface TextBox {
   id: string;
@@ -35,9 +38,7 @@ export default function CombinedCanvas() {
     height: 0,
   });
   const [didDrag, setDidDrag] = useState(false);
-  const [user, setUser] = useState<{ username: string; userId: string } | null>(
-    null
-  );
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -53,19 +54,26 @@ export default function CombinedCanvas() {
   const resetZoom = () => setZoom(1);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const response = await fetch("/api/user");
-      if (response.ok) {
-        const data = await response.json();
-        console.log("user page:", data);
-        setUser({ username: data.username, userId: data.userId });
-      } else {
+    const loadUser = async () => {
+      const response = await fetchUser();
+      if (!response) {
         router.push("/login");
+      } else {
+        setUser(response);
       }
     };
 
-    fetchProfile();
+    loadUser();
   }, [router]);
+
+  useEffect(() => {
+    const LoadNotes = async () => {
+      const boxes = await fetchNotes();
+      setTextBoxes(boxes);
+    };
+
+    LoadNotes();
+  }, []);
 
   // NoteSync(textBoxes)
 

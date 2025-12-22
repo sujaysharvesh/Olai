@@ -10,20 +10,11 @@ import {
 } from "@/db/querie/noteQuerie";
 import { TextBox } from "@/utils/types";
 
-export async function fetchNotes() {
-  const response = await fetch("/api/notes", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+export async function getNotes(userId: string) {
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch notes");
-  }
+    const notes = await getAllNotesId(userId);
+    return notes;
 
-  const data = await response.json();
-  return data.notes;
 }
 
 export async function updateNotes(notes: TextBox[], userId: string) {
