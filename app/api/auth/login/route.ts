@@ -3,23 +3,28 @@ import { NextRequest, NextResponse } from "next/server";
 
 
 export async function POST(request: NextRequest) {
+  try {
+    const { email, password } = await request.json();
 
-    try {
+    const res = await loginUser(email, password);
 
-        const {email, password} = await request.json();
+    console.log("Login successful:", res);
 
-        const response = await loginUser(email, password);
+    const response = NextResponse.json(res, { status: 200 });
+    response.cookies.set("token", res.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: "lax",
+      maxAge: 60 * 60,
+      path: "/",
+    })
 
-        return NextResponse.json({
-            message : "Login successful",
-            status : 200
-        })
+    return response;
 
-    } catch(err) {
-        return NextResponse.json(
-            { error: err.message },
-            { status: 400 }
-        );
-        }
-
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message || "Something went wrong" },
+      { status: 400 }
+    );
+  }
 }

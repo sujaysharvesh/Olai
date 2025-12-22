@@ -1,10 +1,13 @@
 
 import { getUserByEmail, registerUserQuery } from "@/db/user-querie/userQuerie";
 import bcrypt from "bcrypt";
+import type { JwtPayLoad, LoginResponse } from "../utils/types";
+import { authLib } from "@/utils/auth";
 
 
 const salt = process.env.SALT
 const pepper = process.env.PEPPER
+
 
 export async function registerUser(
     username: string,
@@ -29,19 +32,40 @@ export async function registerUser(
     return await registerUserQuery(username, email, hashedPassword);
 }
 
-export async function loginUser(email: string, password: string) {
+
+export async function loginUser(email: string, password: string): Promise<LoginResponse> {
 
     const user = await getUserByEmail(email);
     if (!user) {
         throw new Error("User not found");
     }
 
+    console.log("User found:", user);
+
     const isPasswordValid = await comparePasswordFunc(password, user.password);
     if (!isPasswordValid) {
         throw new Error("Invalid password");
     }
 
-    return user;
+    const payload: JwtPayLoad = {
+        id: user.id,
+        username: user.username,
+        email: user.email
+    }
+
+    const token = authLib.generateToken(payload);
+
+    const response: LoginResponse = {
+        token: token,
+        user: {
+            id: user.id,
+            username: user.username,
+            email: user.email
+        }
+    }
+    console.log("Login response:", response);
+    
+    return response;
 
 }
 

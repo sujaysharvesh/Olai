@@ -41,6 +41,7 @@ export default function CombinedCanvas() {
   const MAX_ZOOM = 3;
   const ZOOM_STEP = 0.25;
 
+
   // Zoom functions
   const zoomIn = () => setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
   const zoomOut = () => setZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));

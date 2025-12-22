@@ -10,3 +10,20 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+CREATE TABLE IF NOT EXISTS notes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+
+    x DOUBLE PRECISION NOT NULL, 
+    y DOUBLE PRECISION NOT NULL,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+
+    text TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+
+CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
