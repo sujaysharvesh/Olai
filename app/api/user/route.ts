@@ -16,8 +16,6 @@ export async function GET(request: NextRequest) {
       );
     }
   
-    return NextResponse.json({
-      message: `Hello ${payload?.username}, This is your profile data.`,
-    });
+    return NextResponse.json({ userId: payload?.id, username: payload?.username });
   }
   

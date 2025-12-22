@@ -9,6 +9,8 @@ import {
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
 import TextBox from "../components/TextBoxProp";
+import { useRouter } from "next/navigation";
+import Logout from "../components/LogoutButton";
 
 interface TextBox {
   id: string;
@@ -32,6 +34,8 @@ export default function CombinedCanvas() {
   const [resizingId, setResizingId] = useState<string | null>(null);
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [didDrag, setDidDrag] = useState(false);
+  const[user, setUser] = useState<{username: string; userId: string} | null>(null);
+  const router  = useRouter();
   
   const canvasRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -46,6 +50,22 @@ export default function CombinedCanvas() {
   const zoomIn = () => setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
   const zoomOut = () => setZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
   const resetZoom = () => setZoom(1);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+        const response = await fetch('/api/user');
+        if (response.ok) {
+            const data = await response.json();
+            console.log("user page:", data);
+            setUser({ username: data.username, userId: data.userId });
+        } else {
+            router.push('/login');
+        }
+    };
+
+    fetchProfile();
+
+}, [router]);
 
   // Handle canvas click to add new text box
   const handleCanvasClick = (e: React.MouseEvent) => {
@@ -353,7 +373,14 @@ export default function CombinedCanvas() {
           
           <ThemeToggle />
         </div>
-
+        <div>
+          {user && (
+            <div className="text-sm text-neutral-600 dark:text-neutral-300">
+              Logged in as: {user.username}
+            </div>
+          )}
+          <Logout/>
+        </div>
         <div className="text-xs text-neutral-500 dark:text-neutral-400">
           Click to add • Drag to move • Scroll to zoom • Right-drag to pan
         </div>

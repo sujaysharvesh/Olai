@@ -1,8 +1,9 @@
 import { loginUser, registerUser } from "@/service/userService";
+import { AuthRequest, User } from "@/utils/types";
 import { NextRequest, NextResponse } from "next/server";
 
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { email, password } = await request.json();
 

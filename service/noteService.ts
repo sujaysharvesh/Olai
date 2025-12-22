@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 
-export async function noteSync(notes: TextBox[]) {
+export async function noteSync(notes: any) {
     const lastSynced = useRef(notes);
 
     useEffect(() => {
