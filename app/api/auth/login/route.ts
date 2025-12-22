@@ -9,8 +9,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const res = await loginUser(email, password);
 
-    console.log("Login successful:", res);
-
     const response = NextResponse.json(res, { status: 200 });
     response.cookies.set("token", res.token, {
       httpOnly: true,

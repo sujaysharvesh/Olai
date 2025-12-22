@@ -24,6 +24,6 @@ CREATE TABLE IF NOT EXISTS notes (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
+);
 
 CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);

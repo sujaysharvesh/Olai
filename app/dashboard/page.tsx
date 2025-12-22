@@ -1,16 +1,12 @@
 "use client";
 
-import {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
 import TextBox from "../components/TextBoxProp";
 import { useRouter } from "next/navigation";
 import Logout from "../components/LogoutButton";
+import { NoteSync } from "./noteSync";
 
 interface TextBox {
   id: string;
@@ -32,19 +28,24 @@ export default function CombinedCanvas() {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [resizingId, setResizingId] = useState<string | null>(null);
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [resizeStart, setResizeStart] = useState({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
   const [didDrag, setDidDrag] = useState(false);
-  const[user, setUser] = useState<{username: string; userId: string} | null>(null);
-  const router  = useRouter();
-  
+  const [user, setUser] = useState<{ username: string; userId: string } | null>(
+    null
+  );
+  const router = useRouter();
+
   const canvasRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Zoom constants
   const MIN_ZOOM = 0.25;
   const MAX_ZOOM = 3;
   const ZOOM_STEP = 0.25;
-
 
   // Zoom functions
   const zoomIn = () => setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
@@ -53,19 +54,20 @@ export default function CombinedCanvas() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-        const response = await fetch('/api/user');
-        if (response.ok) {
-            const data = await response.json();
-            console.log("user page:", data);
-            setUser({ username: data.username, userId: data.userId });
-        } else {
-            router.push('/login');
-        }
+      const response = await fetch("/api/user");
+      if (response.ok) {
+        const data = await response.json();
+        console.log("user page:", data);
+        setUser({ username: data.username, userId: data.userId });
+      } else {
+        router.push("/login");
+      }
     };
 
     fetchProfile();
+  }, [router]);
 
-}, [router]);
+  // NoteSync(textBoxes)
 
   // Handle canvas click to add new text box
   const handleCanvasClick = (e: React.MouseEvent) => {
@@ -122,7 +124,7 @@ export default function CombinedCanvas() {
     setSelectedId(id);
     setDraggingId(id);
     setDidDrag(false);
-    
+
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
@@ -213,15 +215,11 @@ export default function CombinedCanvas() {
       if (draggingId && canvasRef.current) {
         setDidDrag(true);
         const rect = canvasRef.current.getBoundingClientRect();
-        const x =
-          (e.clientX - rect.left - dragOffset.x - panOffset.x) / zoom;
-        const y =
-          (e.clientY - rect.top - dragOffset.y - panOffset.y) / zoom;
+        const x = (e.clientX - rect.left - dragOffset.x - panOffset.x) / zoom;
+        const y = (e.clientY - rect.top - dragOffset.y - panOffset.y) / zoom;
 
         setTextBoxes((prev) =>
-          prev.map((box) =>
-            box.id === draggingId ? { ...box, x, y } : box
-          )
+          prev.map((box) => (box.id === draggingId ? { ...box, x, y } : box))
         );
       }
 
@@ -234,7 +232,16 @@ export default function CombinedCanvas() {
         setPanOffset(newPanOffset);
       }
     },
-    [draggingId, dragOffset, isPanning, panStart, zoom, panOffset, resizingId, resizeStart]
+    [
+      draggingId,
+      dragOffset,
+      isPanning,
+      panStart,
+      zoom,
+      panOffset,
+      resizingId,
+      resizeStart,
+    ]
   );
 
   // Handle mouse up
@@ -316,9 +323,7 @@ export default function CombinedCanvas() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Delete" && selectedId) {
         e.preventDefault();
-        setTextBoxes((prev) =>
-          prev.filter((box) => box.id !== selectedId)
-        );
+        setTextBoxes((prev) => prev.filter((box) => box.id !== selectedId));
         setSelectedId(null);
         setEditingId(null);
       }
@@ -370,7 +375,7 @@ export default function CombinedCanvas() {
               <ZoomIn className="h-4 w-4" />
             </button>
           </div>
-          
+
           <ThemeToggle />
         </div>
         <div>
@@ -379,7 +384,8 @@ export default function CombinedCanvas() {
               Logged in as: {user.username}
             </div>
           )}
-          <Logout/>
+          <Logout />
+           <NoteSync notes={textBoxes}/>
         </div>
         <div className="text-xs text-neutral-500 dark:text-neutral-400">
           Click to add • Drag to move • Scroll to zoom • Right-drag to pan

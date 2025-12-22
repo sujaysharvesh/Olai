@@ -1,5 +1,5 @@
 
-import { getUserByEmail, registerUserQuery } from "@/db/user-querie/userQuerie";
+import { getUserByEmail, registerUserQuery } from "@/db/querie/userQuerie";
 import bcrypt from "bcrypt";
 import type { JwtPayLoad, LoginResponse } from "../utils/types";
 import { authLib } from "@/utils/auth";

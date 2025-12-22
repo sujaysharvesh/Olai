@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 
 
 export async function GET(request: NextRequest) {
+  
     const user = authLib.extractCookie(request.headers.get('cookie'));
       
     const payload = user ? authLib.verifyToken(user) : null;    

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authLib } from "@/utils/auth";
-import { parseCookie } from "cookie";
 
 
 export async function middleware(request: NextRequest) {
@@ -34,5 +33,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
+  matcher: [
+    '/api/:path*',
+    '/dashboard/:path*'
+  ]
 };
