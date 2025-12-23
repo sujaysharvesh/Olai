@@ -3,7 +3,7 @@ import { AuthRequest, User } from "@/utils/types";
 import { NextRequest, NextResponse } from "next/server";
 
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<Response> {
   try {
     const { email, password } = await request.json();
 

@@ -9,8 +9,7 @@ import Logout from "../components/LogoutButton";
 import { NoteSync } from "./noteSync";
 import { fetchNotes } from "./fetchNotes";
 import { User } from "@/utils/types";
-import fetchUser from "./fetchUser";
-
+import { useSession } from "next-auth/react";
 interface TextBox {
   id: string;
   x: number;
@@ -21,6 +20,8 @@ interface TextBox {
 }
 
 export default function CombinedCanvas() {
+  const { data: session, status } = useSession();
+
   const [textBoxes, setTextBoxes] = useState<TextBox[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -38,7 +39,6 @@ export default function CombinedCanvas() {
     height: 0,
   });
   const [didDrag, setDidDrag] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -54,17 +54,10 @@ export default function CombinedCanvas() {
   const resetZoom = () => setZoom(1);
 
   useEffect(() => {
-    const loadUser = async () => {
-      const response = await fetchUser();
-      if (!response) {
-        router.push("/login");
-      } else {
-        setUser(response);
-      }
-    };
-
-    loadUser();
-  }, [router]);
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
 
   useEffect(() => {
     const LoadNotes = async () => {
@@ -75,6 +68,7 @@ export default function CombinedCanvas() {
     LoadNotes();
   }, []);
 
+  console.log("session, ", session?.user.name)
   // NoteSync(textBoxes)
 
   // Handle canvas click to add new text box
@@ -84,7 +78,6 @@ export default function CombinedCanvas() {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left - panOffset.x) / zoom;
     const y = (e.clientY - rect.top - panOffset.y) / zoom;
-
     const newBox: TextBox = {
       id: crypto.randomUUID(),
       x,
@@ -387,11 +380,9 @@ export default function CombinedCanvas() {
           <ThemeToggle />
         </div>
         <div>
-          {user && (
             <div className="text-sm text-neutral-600 dark:text-neutral-300">
-              Logged in as: {user.username}
+              Logged in as: {session?.user.name}
             </div>
-          )}
           <Logout />
           <NoteSync notes={textBoxes} />
         </div>

@@ -18,6 +18,31 @@ export async function registerUserQuery(
     return result.rows[0];
 }
 
+export async function registerOauthUser(username: string, email: string, provider: string, providerId: string) {
+
+    const query = `
+                INSERT INTO users (username, email, provider_id, provider)
+                VALUES ($1, $2, $3, $4)
+                RETURNING id, username, email, created_at`;
+    const values = [username, email, providerId, provider];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+    
+}
+
+export async function updateOauthUser(email: string, username: string,  providerId: string, provider: string) {
+
+    const query = `
+            UPDATE users
+            SET provider_id = $1, provider = $2, username = $4
+            WHERE email = $3
+            RETURNING id, username, email, provider, provider_id`;
+    const values = [providerId, provider, email, username];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+
+}
+
 export async function getUserByEmail(email: string) {
     const result = await pool.query(
         `SELECT id, email, username, password FROM users WHERE email = $1`,

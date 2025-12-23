@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 interface FormData {
   email: string;
@@ -9,48 +10,86 @@ interface FormData {
 }
 
 export default function Login() {
+  const { data: session, status } = useSession();
+  
   const router = useRouter();
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value,
-    });
-  };
+  // const [formData, setFormData] = useState<FormData>({
+  //   email: "",
+  //   password: "",
+  // });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setFormData({
+  //     ...formData,
+  //     [e.target.id]: e.target.value,
+  //   });
+  // };
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        alert(data.error || "Login failed");
-        return;
+      if (result?.error) {
+        setError("Invalid email or password");
+      } else {
+        router.push("/dashboard");
       }
-
-      router.push("/dashboard");
     } catch (err) {
-      console.error("Login error:", err);
-      alert("Something went wrong");
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     const response = await fetch("/api/auth/login", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(formData),
+  //     });
+
+  //     if (!response.ok) {
+  //       const data = await response.json();
+  //       alert(data.error || "Login failed");
+  //       return;
+  //     }
+
+  //     router.push("/dashboard");
+  //   } catch (err) {
+  //     console.error("Login error:", err);
+  //     alert("Something went wrong");
+  //   }
+  // };
+
   const handleGoogleLogin = () => {
-    // Implement Google OAuth redirect
-    console.log("Google login clicked");
-    // window.location.href = "/api/auth/google"; // Uncomment when implementing OAuth
+    signIn("google", {
+      prompt: "select_account",
+      callbackUrl: "/profile",
+    });    
   };
 
   return (
@@ -87,13 +126,13 @@ export default function Login() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleEmailLogin} className="space-y-5">
           <div>
             <input
               id="email"
               type="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Email address"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 text-sm placeholder-gray-400 bg-white"
               required
@@ -104,8 +143,8 @@ export default function Login() {
             <input
               id="password"
               type="password"
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 text-sm placeholder-gray-400 bg-white"
               required

@@ -1,20 +1,29 @@
 import { updateNotes } from "@/service/noteService";
 import { authLib } from "@/utils/auth";
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../auth/[...nextauth]/route";
 
-
-export async function POST(request: NextRequest, response: NextResponse) {
+export async function POST(request: NextRequest): Promise<Response> {
     try {
-      const user = authLib.extractCookie(request.headers.get('cookie'));
-      const payload = user ? authLib.verifyToken(user) : null;
 
-      if (!payload?.id) {
-        throw new Error("User not authenticated");
+      const session = await getServerSession(authOptions);
+
+      if (!session || !session.user?.email) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
+
+
+      // const user = authLib.extractCookie(request.headers.get('cookie'));
+      // const payload = user ? authLib.verifyToken(user) : null;
+
+      // if (!payload?.id) {
+      //   throw new Error("User not authenticated");
+      // }
   
       const { notes } = await request.json();
   
-      await updateNotes(notes, payload?.id);
+      await updateNotes(notes, session.user.id);
   
       return NextResponse.json({ message: "Notes synced successfully" }, { status: 200 });
       
