@@ -1,19 +1,21 @@
 import { useRouter } from "next/navigation";
+import {signOut} from "next-auth/react";
 
 
 export default function Logout() {
     const router = useRouter();
 
     const handleLogout = async () => {
-        const response = await fetch('/api/auth/logout', {
-            method: 'POST',
-        });
+        // const response = await fetch('/api/auth/logout', {
+        //     method: 'POST',
+        // });
 
-        if (response.ok) {
-            router.push('/login');
-        } else {
-            console.error('Logout failed');
-        }
+        // if (response.ok) {
+        //     router.push('/login');
+        // } else {
+        //     console.error('Logout failed');
+        // }
+        await signOut({ callbackUrl: "/login" });
     }
 
     return (<div>
