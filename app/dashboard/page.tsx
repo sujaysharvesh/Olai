@@ -393,7 +393,7 @@ export default function CombinedCanvas() {
             </div>
           )}
           <Logout />
-           <NoteSync notes={textBoxes}/>
+          <NoteSync notes={textBoxes} />
         </div>
         <div className="text-xs text-neutral-500 dark:text-neutral-400">
           Click to add • Drag to move • Scroll to zoom • Right-drag to pan
@@ -533,6 +533,7 @@ export default function CombinedCanvas() {
       </div>
 
       {/* Edit Popover */}
+      {/* Edit Popover */}
       {editingId && editingBox && (
         <div
           className="fixed inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm"
@@ -548,18 +549,89 @@ export default function CombinedCanvas() {
             >
               ✕
             </button>
-            <textarea
-              ref={textareaRef}
-              value={editingBox.text}
-              onChange={(e) => handleTextChange(editingId, e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type your note here..."
-              className="min-h-[300px] w-full resize-none bg-transparent text-base text-neutral-800 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
-            />
-            <div className="mt-2 flex items-center justify-between border-t border-neutral-200 pt-3 dark:border-neutral-700">
+
+            <div className="relative">
+              <textarea
+                ref={textareaRef}
+                value={editingBox.text}
+                onChange={(e) => {
+                  const newText = e.target.value;
+                  // Apply character limit here too
+                  if (newText.length <= 1000) {
+                    // Use the same MAX_CHARS value
+                    handleTextChange(editingId, newText);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  handleKeyDown(e);
+                  // Prevent typing when at max characters
+                  if (editingBox.text.length >= 1000) {
+                    const allowedKeys = [
+                      "Backspace",
+                      "Delete",
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "ArrowUp",
+                      "ArrowDown",
+                      "Tab",
+                      "Escape",
+                      "Enter",
+                    ];
+
+                    const isSelectAll =
+                      e.key === "a" && (e.ctrlKey || e.metaKey);
+                    const isCopyCut =
+                      (e.key === "c" || e.key === "x") &&
+                      (e.ctrlKey || e.metaKey);
+
+                    if (
+                      !allowedKeys.includes(e.key) &&
+                      !isSelectAll &&
+                      !isCopyCut &&
+                      !e.ctrlKey &&
+                      !e.metaKey
+                    ) {
+                      e.preventDefault();
+                    }
+                  }
+                }}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pastedText = e.clipboardData.getData("text");
+                  const currentText = editingBox.text;
+
+                  const selectionStart = e.currentTarget.selectionStart;
+                  const selectionEnd = e.currentTarget.selectionEnd;
+                  const textBefore = currentText.substring(0, selectionStart);
+                  const textAfter = currentText.substring(selectionEnd);
+
+                  const newText = textBefore + pastedText + textAfter;
+
+                  // Truncate if exceeds limit
+                  const finalText =
+                    newText.length > 1000
+                      ? textBefore +
+                        pastedText.substring(
+                          0,
+                          1000 - textBefore.length - textAfter.length
+                        ) +
+                        textAfter
+                      : newText;
+
+                  handleTextChange(editingId, finalText);
+                }}
+                placeholder="Type your note here..."
+                className="min-h-[300px] w-full resize-none bg-transparent text-base text-neutral-800 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
+                maxLength={1000}
+              />
+
+              {/* Character counter for popover */}
+            </div>
+            <div className="mt-3 flex items-center justify-between border-t border-neutral-200 px-2 pt-2 dark:border-neutral-700">
               <span className="text-xs text-neutral-400">
                 Press Escape to close
               </span>
+
               <button
                 onClick={closePopover}
                 className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600"

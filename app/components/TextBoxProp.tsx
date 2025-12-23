@@ -16,6 +16,7 @@ interface TextBoxProps {
   onTextKeyDown: (e: React.KeyboardEvent, id: string) => void
   onFocus: (id: string) => void
   onResize?: (id: string, width: number, height: number) => void
+  onBlur?: (id: string) => void
 }
 
 export default function TextBox({
@@ -32,6 +33,7 @@ export default function TextBox({
   onTextKeyDown,
   onFocus,
   onResize,
+  onBlur,
 }: TextBoxProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [boxWidth, setBoxWidth] = useState(width)
@@ -58,7 +60,7 @@ export default function TextBox({
     target.style.height = finalHeight + "px"
     setBoxHeight(finalHeight)
     
-    target.style.overflow = newHeight >= MAX_HEIGHT ? "auto" : "hidden"
+    target.style.overflow = newHeight >= MAX_HEIGHT ? "hidden" : "hidden"
   }, [])
 
   useEffect(() => {
@@ -87,7 +89,9 @@ export default function TextBox({
   }, [text])
 
   const handleTextChange = useCallback((id: string, newText: string) => {
+    // Strictly enforce character limit
     if (newText.length > MAX_CHARS) {
+      // Truncate to max characters
       newText = newText.substring(0, MAX_CHARS)
     }
     
@@ -99,6 +103,7 @@ export default function TextBox({
     onTextChange(id, newText)
   }, [onTextChange])
 
+ 
   const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -125,7 +130,7 @@ export default function TextBox({
       setBoxHeight(newHeight)
       
       if (textareaRef.current) {
-        textareaRef.current.style.overflow = newHeight >= MAX_HEIGHT ? 'auto' : 'hidden'
+        textareaRef.current.style.overflow = newHeight >= MAX_HEIGHT ? 'hidden' : 'hidden'
       }
     }
 
@@ -158,71 +163,97 @@ export default function TextBox({
   return (
     <div
       data-box-id={id}
-      className={`absolute text-box-container ${
-        isDragging ? "cursor-grabbing" : "cursor-move"
-      }`}
+      className={`absolute transition-transform duration-200 ${
+        isDragging ? "cursor-grabbing z-20" : "cursor-move"
+      } ${isSelected ? "z-10" : "z-1"}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        transform: isDragging ? "scale(1.02)" : "none",
-        transition: isDragging ? "none" : "transform 0.1s ease",
-        zIndex: isSelected ? 10 : 1,
+        transform: isDragging ? "translateZ(0)" : "translateZ(0)",
         maxWidth: `${MAX_WIDTH}px`,
+        filter: isDragging ? "drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15))" : "none",
+        willChange: isDragging ? "transform, left, top" : "auto",
       }}
     >
       <div
         onMouseDown={(e) => onMouseDown(e, id)}
-        className={`group relative rounded-lg border bg-gradient-to-br from-white to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 shadow-md p-1 ${
-          isSelected
-            ? "ring-2 ring-amber-500 shadow-2xl"
-            : "ring-1 ring-neutral-200 hover:ring-amber-300 hover:shadow-xl dark:ring-neutral-700"
-        }`}
+        className={`group relative rounded-xl border-2 bg-gradient-to-br from-white via-white to-neutral-50 
+          dark:from-neutral-800 dark:via-neutral-800 dark:to-neutral-900 
+          shadow-lg p-1.5
+          ${
+            isSelected
+              ? "border-amber-500/80 shadow-xl shadow-amber-500/10 ring-2 ring-amber-500/30"
+              : "border-neutral-200/80 hover:border-amber-400/60 hover:shadow-xl dark:border-neutral-700/80"
+          }`}
         style={{
           width: `${boxWidth}px`,
+          minHeight: '60px',
           maxHeight: `${MAX_HEIGHT}px`,
-          transition: 'width 0.2s ease',
           overflow: 'hidden',
         }}
       >
-        <textarea
-          ref={textareaRef}
-          data-box-id={id}
-          autoFocus={isSelected}
-          value={text}
-          onChange={(e) => handleTextChange(id, e.target.value)}
-          onKeyDown={(e) => onTextKeyDown(e, id)}
-          onFocus={() => onFocus(id)}
-          placeholder="Type here..."
-          className="resize-none bg-transparent p-1 text-sm text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none"
-          style={{
-            width: "100%",
-            height: `${boxHeight}px`,
-            minHeight: "28px",
-            maxHeight: `${MAX_HEIGHT}px`,
-            fontSize: `${calculateFontSize(14)}px`,
-            lineHeight: "1.5",
-            wordWrap: "break-word",
-            overflowWrap: "break-word",
-            overflow: "hidden",
-            resize: "none",
-          }}
-          onInput={handleInput}
-        />
-        
-        {text.length > MAX_CHARS * 0.8 && (
-          <div className="absolute bottom-1 right-1 text-xs text-neutral-500 bg-white/90 dark:bg-neutral-800/90 px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-600">
-            {text.length}/{MAX_CHARS}
+        {/* Header */}
+        <div className="flex items-center justify-between mb-1 px-1">
+          <div className="flex items-center space-x-1.5">
+            <div className="h-1.5 w-1.5 rounded-full bg-amber-500 opacity-60" />
+            <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+              Text Box
+            </span>
           </div>
-        )}
-
+        </div>
+  
+        {/* Textarea container */}
+        <div className="relative">
+          <textarea
+            ref={textareaRef}
+            data-box-id={id}
+            maxLength={MAX_CHARS}
+            autoFocus={isSelected && text.length === 0}
+            value={text}
+            onChange={(e) => {
+              const newText = e.target.value
+              handleTextChange(id, newText)
+            }}
+            // onPaste={handlePaste}
+            onFocus={() => onFocus(id)}
+            onBlur={() => onBlur?.(id)}
+            placeholder="Start typing..."
+            className="w-full resize-none bg-transparent px-1.5 py-0.5 text-neutral-800 
+              dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 
+              focus:outline-none overflow-hidden"
+            style={{
+              height: `${Math.max(24, Math.min(boxHeight - 40, MAX_HEIGHT - 40))}px`,
+              minHeight: "24px",
+              maxHeight: `${MAX_HEIGHT - 40}px`,
+              fontSize: `${calculateFontSize(14)}px`,
+              lineHeight: "1.6",
+              wordWrap: "break-word",
+              overflowWrap: "break-word",
+              overflowY: "hidden",
+              resize: "none",
+            }}
+            onInput={handleInput}
+          />
+        </div>
+  
+        {/* Resize handle */}
         <div
           className="absolute bottom-0 right-0 h-4 w-4 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
           onMouseDown={handleResizeMouseDown}
+          title="Resize"
+          style={{
+            opacity: isSelected ? 1 : 0,
+          }}
         >
           <svg viewBox="0 0 16 16" className="h-4 w-4 text-neutral-400" fill="currentColor">
-            <path d="M14 14H12V12H14V14ZM14 10H12V8H14V10ZM10 14H8V12H10V14ZM14 6H12V4H14V6ZM10 10H8V8H10V10ZM6 14H4V12H6V14Z" />
-          </svg>
+                      <path d="M14 14H12V12H14V14ZM14 10H12V8H14V10ZM10 14H8V12H10V14ZM14 6H12V4H14V6ZM10 10H8V8H10V10ZM6 14H4V12H6V14Z" />
+                    </svg>
         </div>
+  
+        {/* Selection indicator */}
+        {isSelected && (
+          <div className="absolute -top-1 -left-1 -right-1 -bottom-1 border-2 border-amber-500/30 rounded-xl pointer-events-none" />
+        )}
       </div>
     </div>
   )
