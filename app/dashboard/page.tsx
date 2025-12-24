@@ -10,18 +10,64 @@ import { NoteSync } from "./noteSync";
 import { fetchNotes } from "./fetchNotes";
 import { User } from "@/utils/types";
 import { useSession } from "next-auth/react";
+
 interface TextBox {
   id: string;
+  title: string;
+  color: string;
   x: number;
   y: number;
   text: string;
   width: number;
   height: number;
 }
+const BOX_COLORS = [
+  {
+    name: "Amber",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    text: "text-amber-900",
+    dark: "dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100",
+  },
+  {
+    name: "Red",
+    bg: "bg-red-50",
+    border: "border-red-200",
+    text: "text-red-900",
+    dark: "dark:bg-red-950 dark:border-red-800 dark:text-red-100",
+  },
+  {
+    name: "Blue",
+    bg: "bg-blue-50",
+    border: "border-blue-200",
+    text: "text-blue-900",
+    dark: "dark:bg-blue-950 dark:border-blue-800 dark:text-blue-100",
+  },
+  {
+    name: "Green",
+    bg: "bg-green-50",
+    border: "border-green-200",
+    text: "text-green-900",
+    dark: "dark:bg-green-950 dark:border-green-800 dark:text-green-100",
+  },
+  {
+    name: "Purple",
+    bg: "bg-purple-50",
+    border: "border-purple-200",
+    text: "text-purple-900",
+    dark: "dark:bg-purple-950 dark:border-purple-800 dark:text-purple-100",
+  },
+  {
+    name: "Pink",
+    bg: "bg-pink-50",
+    border: "border-pink-200",
+    text: "text-pink-900",
+    dark: "dark:bg-pink-950 dark:border-pink-800 dark:text-pink-100",
+  },
+]
 
 export default function CombinedCanvas() {
   const { data: session, status } = useSession();
-
   const [textBoxes, setTextBoxes] = useState<TextBox[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -40,6 +86,7 @@ export default function CombinedCanvas() {
   });
   const [didDrag, setDidDrag] = useState(false);
   const router = useRouter();
+  const titleInputRef = useRef<HTMLInputElement>(null)
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -51,7 +98,10 @@ export default function CombinedCanvas() {
   // Zoom functions
   const zoomIn = () => setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
   const zoomOut = () => setZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
-  const resetZoom = () => setZoom(1);
+  const resetZoom = () => {
+    setZoom(1);
+    setPanOffset({ x: 0, y: 0 });
+  };
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -68,9 +118,6 @@ export default function CombinedCanvas() {
     LoadNotes();
   }, []);
 
-  console.log("session, ", session?.user.name)
-  // NoteSync(textBoxes)
-
   // Handle canvas click to add new text box
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target !== canvasRef.current || isPanning || e.button !== 0) return;
@@ -80,6 +127,8 @@ export default function CombinedCanvas() {
     const y = (e.clientY - rect.top - panOffset.y) / zoom;
     const newBox: TextBox = {
       id: crypto.randomUUID(),
+      title: "",
+      color: "Amber",
       x,
       y,
       text: "",
@@ -109,7 +158,6 @@ export default function CombinedCanvas() {
 
   // Handle mouse down for dragging
   const handleMouseDown = (e: React.MouseEvent, id: string) => {
-    // If clicking on textarea, don't start dragging
     if ((e.target as HTMLElement).tagName === "TEXTAREA") {
       setSelectedId(id);
       setEditingId(id);
@@ -135,9 +183,10 @@ export default function CombinedCanvas() {
     });
   };
 
-  // Handle resize mouse down
   const handleResizeMouseDown = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
+    e.preventDefault();
+    
     const box = textBoxes.find((b) => b.id === id);
     if (!box) return;
 
@@ -152,7 +201,6 @@ export default function CombinedCanvas() {
 
   // Handle panning start
   const handleSpaceDrag = (e: React.MouseEvent) => {
-    // Start panning on middle click or right-click
     if (e.button === 1 || e.button === 2) {
       e.preventDefault();
       e.stopPropagation();
@@ -165,7 +213,6 @@ export default function CombinedCanvas() {
     }
   };
 
-  // Handle mouse wheel for zoom
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
 
@@ -192,13 +239,12 @@ export default function CombinedCanvas() {
     setPanOffset({ x: newPanOffsetX, y: newPanOffsetY });
   };
 
-  // Handle mouse move for dragging, resizing, and panning
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      // Handle resizing
       if (resizingId) {
         const deltaX = (e.clientX - resizeStart.x) / zoom;
         const deltaY = (e.clientY - resizeStart.y) / zoom;
+        
         const newWidth = Math.max(120, resizeStart.width + deltaX);
         const newHeight = Math.max(28, resizeStart.height + deltaY);
 
@@ -302,6 +348,10 @@ export default function CombinedCanvas() {
     }
   }, []);
 
+  const handleColorChange = (id: string, color: string) => {
+    setTextBoxes((prev) => prev.map((box) => (box.id === id ? { ...box, color } : box)))
+  }
+
   // Focus textarea when editing
   useEffect(() => {
     if (editingId && textareaRef.current) {
@@ -329,81 +379,105 @@ export default function CombinedCanvas() {
         setEditingId(null);
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedId]);
 
+  const handleTitleChange = (id: string, title: string) => {
+    setTextBoxes((prev) => prev.map((box) => (box.id === id ? { ...box, title } : box)))
+  }
+
   const editingBox = textBoxes.find((b) => b.id === editingId);
+  const gridSize = 20 * zoom;
+  const editingBoxColor = editingBox ? BOX_COLORS.find((c) => c.name === editingBox.color) : BOX_COLORS[0]
 
   return (
     <div className="flex h-screen flex-col bg-neutral-100 dark:bg-neutral-900">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-2 dark:border-neutral-700 dark:bg-neutral-800">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-amber-500 text-sm font-bold text-white">
-            T
+      <div className="flex items-center justify-between border-b-2 border-neutral-200/80 bg-[#F7F5F3] px-4 py-3 dark:border-neutral-700/80 dark:bg-neutral-900">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-sm font-bold text-white shadow-sm">
+            O
           </div>
-          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-            Text Canvas Pro
-          </span>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-neutral-800 dark:text-white">
+              Olai Canvas
+            </span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              Modern note-keeping space
+            </span>
+          </div>
         </div>
 
+        {/* Right: Controls & User */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-1 rounded-lg border border-neutral-200 dark:border-neutral-700 p-1 bg-white dark:bg-neutral-800">
             <button
               onClick={zoomOut}
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 dark:text-neutral-400 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-800 dark:hover:text-white"
               title="Zoom Out"
             >
-              <ZoomOut className="h-4 w-4" />
+              <ZoomOut className="h-3.5 w-3.5" />
             </button>
-            <button
-              onClick={resetZoom}
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
-              title="Reset Zoom"
-            >
-              <Maximize2 className="h-4 w-4" />
-            </button>
-            <span className="min-w-[60px] text-center text-sm font-medium text-neutral-600 dark:text-neutral-300">
-              {Math.round(zoom * 100)}%
-            </span>
+            <div className="min-w-[52px] text-center">
+              <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                {Math.round(zoom * 100)}%
+              </span>
+            </div>
             <button
               onClick={zoomIn}
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 dark:text-neutral-400 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-800 dark:hover:text-white"
               title="Zoom In"
             >
-              <ZoomIn className="h-4 w-4" />
+              <ZoomIn className="h-3.5 w-3.5" />
+            </button>
+            <div className="h-4 w-px bg-neutral-300 dark:bg-neutral-600 mx-1" />
+            <button
+              onClick={resetZoom}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 dark:text-neutral-400 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-800 dark:hover:text-white"
+              title="Reset Zoom"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
             </button>
           </div>
 
-          <ThemeToggle />
-        </div>
-        <div>
-            <div className="text-sm text-neutral-600 dark:text-neutral-300">
-              Logged in as: {session?.user.name}
+          {/* User & Actions */}
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
+            {/* User Info */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="text-xs text-neutral-600 dark:text-neutral-400">
+                <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                  {session?.user.name?.split(' ')[0] || 'User'}
+                </span>
+                <span className="mx-1">•</span>
+                Online
+              </div>
             </div>
-          <Logout />
-          <NoteSync notes={textBoxes} />
-        </div>
-        <div className="text-xs text-neutral-500 dark:text-neutral-400">
-          Click to add • Drag to move • Scroll to zoom • Right-drag to pan
+
+            {/* Sync & Logout */}
+            <div className="flex items-center gap-1">
+              <NoteSync notes={textBoxes} />
+              <Logout />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Canvas Container */}
       <div className="relative flex-1 overflow-hidden">
-        {/* Background Grid */}
+        {/* Background Grid - FIXED */}
         <div
           className="absolute inset-0"
           style={{
-            // backgroundImage:
-            //   "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
-            backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
+            backgroundImage:
+              "radial-gradient(circle, rgb(197, 187, 187) 1px, transparent 1px)",
+            backgroundSize: `${gridSize}px ${gridSize}px`,
             backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
-            transform: `scale(${zoom})`,
-            width: `${100 / zoom}%`,
-            height: `${100 / zoom}%`,
           }}
         />
 
@@ -424,7 +498,6 @@ export default function CombinedCanvas() {
             style={{
               transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`,
               transformOrigin: "0 0",
-              willChange: "transform",
             }}
           >
             {textBoxes.map((box) => (
@@ -439,6 +512,8 @@ export default function CombinedCanvas() {
               >
                 <TextBox
                   id={box.id}
+                  title={box.title}
+                  color={box.color}
                   x={0}
                   y={0}
                   text={box.text}
@@ -458,21 +533,14 @@ export default function CombinedCanvas() {
                     className="absolute bottom-0 right-0 h-4 w-4 cursor-se-resize opacity-50 hover:opacity-100 transition-opacity"
                     onMouseDown={(e) => handleResizeMouseDown(e, box.id)}
                   >
-                    {/* <svg
-                      viewBox="0 0 16 16"
-                      className="h-4 w-4 text-neutral-400"
-                      fill="currentColor"
-                    >
-                      <path d="M14 14H12V12H14V14ZM14 10H12V8H14V10ZM10 14H8V12H10V14ZM14 6H12V4H14V6ZM10 10H8V8H10V10ZM6 14H4V12H6V14Z" />
-                    </svg> */}
-                  </div>
+                 </div>
                 )}
               </div>
             ))}
 
-            {/* Empty state */}
+            {/* Empty state - REMOVED instructions to fix click issue */}
             {textBoxes.length === 0 && (
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="pointer-events-none absolute inset-0 flex items-center mt-40 justify-center">
                 <div className="text-center">
                   <div className="mb-4 text-5xl text-neutral-300 dark:text-neutral-600">
                     +
@@ -480,13 +548,6 @@ export default function CombinedCanvas() {
                   <p className="text-lg text-neutral-500 dark:text-neutral-400">
                     Click anywhere to add a text box
                   </p>
-                  <div className="mt-4 text-sm text-neutral-400 dark:text-neutral-500">
-                    <p>• Scroll wheel to zoom in/out</p>
-                    <p>• Right-click + drag to pan the canvas</p>
-                    <p>• Double-click canvas to reset view</p>
-                    <p>• Press Delete to remove selected box</p>
-                    <p>• Use buttons or mouse wheel to zoom</p>
-                  </div>
                 </div>
               </div>
             )}
@@ -498,40 +559,30 @@ export default function CombinedCanvas() {
               Panning mode - Release to stop
             </div>
           )}
-
-          {/* Zoom indicator */}
-          <div className="pointer-events-none fixed bottom-4 left-4 rounded bg-black/80 px-3 py-2 text-xs text-white">
-            Zoom: {Math.round(zoom * 100)}%
-          </div>
         </div>
       </div>
 
-      {/* Status bar */}
+      {/* Status bar - SIMPLIFIED */}
       <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-1 text-xs text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
         <div>
           {selectedId
-            ? `Selected box at (${textBoxes
-                .find((b) => b.id === selectedId)
-                ?.x.toFixed(0)}, ${textBoxes
-                .find((b) => b.id === selectedId)
-                ?.y.toFixed(0)})`
+            ? `Selected box at (${textBoxes.find((b) => b.id === selectedId)?.x.toFixed(0)}, ${textBoxes.find((b) => b.id === selectedId)?.y.toFixed(0)})`
             : "No selection"}
         </div>
-        <div>
-          Boxes: {textBoxes.length} | Zoom: {Math.round(zoom * 100)}% | Pan: (
-          {panOffset.x.toFixed(0)}, {panOffset.y.toFixed(0)})
+        <div className="flex items-center gap-4">
+          <span>Boxes: {textBoxes.length}</span>
+          <span>Zoom: {Math.round(zoom * 100)}%</span>
         </div>
       </div>
 
       {/* Edit Popover */}
-      {/* Edit Popover */}
-      {editingId && editingBox && (
+      {editingId && editingBox && editingBoxColor && (
         <div
           className="fixed inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={closePopover}
         >
           <div
-            className="relative w-full max-w-2xl mx-4 rounded-xl bg-white p-6 shadow-2xl dark:bg-neutral-800"
+            className={`relative w-full max-w-2xl mx-4 rounded-xl p-6 shadow-2xl dark:bg-neutral-800 ${editingBoxColor.bg} ${editingBoxColor.border} ${editingBoxColor.text} ${editingBoxColor.dark}`}
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -542,20 +593,25 @@ export default function CombinedCanvas() {
             </button>
 
             <div className="relative">
+            <input
+              ref={titleInputRef}
+              type="text"
+              value={editingBox.title}
+              onChange={(e) => handleTitleChange(editingId, e.target.value)}
+              placeholder="Add a title..."
+              className={`w-full mb-3 bg-transparent text-lg font-semibold placeholder:opacity-40 focus:outline-none`}
+            />
               <textarea
                 ref={textareaRef}
                 value={editingBox.text}
                 onChange={(e) => {
                   const newText = e.target.value;
-                  // Apply character limit here too
                   if (newText.length <= 1000) {
-                    // Use the same MAX_CHARS value
                     handleTextChange(editingId, newText);
                   }
                 }}
                 onKeyDown={(e) => {
                   handleKeyDown(e);
-                  // Prevent typing when at max characters
                   if (editingBox.text.length >= 1000) {
                     const allowedKeys = [
                       "Backspace",
@@ -569,19 +625,10 @@ export default function CombinedCanvas() {
                       "Enter",
                     ];
 
-                    const isSelectAll =
-                      e.key === "a" && (e.ctrlKey || e.metaKey);
-                    const isCopyCut =
-                      (e.key === "c" || e.key === "x") &&
-                      (e.ctrlKey || e.metaKey);
+                    const isSelectAll = e.key === "a" && (e.ctrlKey || e.metaKey);
+                    const isCopyCut = (e.key === "c" || e.key === "x") && (e.ctrlKey || e.metaKey);
 
-                    if (
-                      !allowedKeys.includes(e.key) &&
-                      !isSelectAll &&
-                      !isCopyCut &&
-                      !e.ctrlKey &&
-                      !e.metaKey
-                    ) {
+                    if (!allowedKeys.includes(e.key) && !isSelectAll && !isCopyCut && !e.ctrlKey && !e.metaKey) {
                       e.preventDefault();
                     }
                   }
@@ -598,16 +645,9 @@ export default function CombinedCanvas() {
 
                   const newText = textBefore + pastedText + textAfter;
 
-                  // Truncate if exceeds limit
-                  const finalText =
-                    newText.length > 1000
-                      ? textBefore +
-                        pastedText.substring(
-                          0,
-                          1000 - textBefore.length - textAfter.length
-                        ) +
-                        textAfter
-                      : newText;
+                  const finalText = newText.length > 1000
+                    ? textBefore + pastedText.substring(0, 1000 - textBefore.length - textAfter.length) + textAfter
+                    : newText;
 
                   handleTextChange(editingId, finalText);
                 }}
@@ -615,9 +655,41 @@ export default function CombinedCanvas() {
                 className="min-h-[300px] w-full resize-none bg-transparent text-base text-neutral-800 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
                 maxLength={1000}
               />
-
-              {/* Character counter for popover */}
+              
             </div>
+            <div className="mt-4 border-t border-current opacity-20 pt-4">
+              <p className="text-xs font-semibold mb-2 opacity-60">Color</p>
+              <div className="flex gap-2 flex-wrap">
+                {BOX_COLORS.map((colorOption) => (
+                  <button
+                    key={colorOption.name}
+                    onClick={() => handleColorChange(editingId, colorOption.name)}
+                    className={`w-6 h-6 rounded-full border-2 transition-all ${
+                      editingBox.color === colorOption.name
+                        ? "border-current ring-2 ring-offset-1"
+                        : "border-current opacity-40 hover:opacity-60"
+                    }`}
+                    style={{
+                      backgroundColor:
+                        colorOption.name === "Amber"
+                          ? "#fef3c7"
+                          : colorOption.name === "Red"
+                            ? "#fee2e2"
+                            : colorOption.name === "Blue"
+                              ? "#dbeafe"
+                              : colorOption.name === "Green"
+                                ? "#dcfce7"
+                                : colorOption.name === "Purple"
+                                  ? "#f3e8ff"
+                                  : "#fce7f3",
+                    }}
+                    title={colorOption.name}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            
             <div className="mt-3 flex items-center justify-between border-t border-neutral-200 px-2 pt-2 dark:border-neutral-700">
               <span className="text-xs text-neutral-400">
                 Press Escape to close

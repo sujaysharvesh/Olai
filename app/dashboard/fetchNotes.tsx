@@ -11,6 +11,8 @@ export async function fetchNotes(): Promise<TextBox[]> {
     
         const boxes: TextBox[] = data.map((note: any) => ({
           id: note.id,
+          title: note.title,
+          color: note.color,
           x: note.x,
           y: note.y,
           width: note.width,

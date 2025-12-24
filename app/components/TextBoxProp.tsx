@@ -1,28 +1,77 @@
-'use client'
+"use client";
 
-import { useCallback, useRef, useEffect, useState } from 'react'
+import { useCallback, useRef, useEffect, useState } from "react";
 
 interface TextBoxProps {
-  id: string
-  x: number
-  y: number
-  text: string
-  width: number
-  height: number
-  isSelected: boolean
-  isDragging: boolean
-  onMouseDown: (e: React.MouseEvent, id: string) => void
-  onTextChange: (id: string, text: string) => void
-  onTextKeyDown: (e: React.KeyboardEvent, id: string) => void
-  onFocus: (id: string) => void
-  onResize?: (id: string, width: number, height: number) => void
-  onBlur?: (id: string) => void
+  id: string;
+  title: string;
+  color: string;
+  x: number;
+  y: number;
+  text: string;
+  width: number;
+  height: number;
+  isSelected: boolean;
+  isDragging: boolean;
+  onMouseDown: (e: React.MouseEvent, id: string) => void;
+  onTextChange: (id: string, text: string) => void;
+  onTextKeyDown: (e: React.KeyboardEvent, id: string) => void;
+  onFocus: (id: string) => void;
+  onResize?: (id: string, width: number, height: number) => void;
+  onBlur?: (id: string) => void;
 }
+
+const BOX_COLORS = [
+  {
+    name: "Amber",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    text: "text-amber-900",
+    dark: "dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100",
+  },
+  {
+    name: "Red",
+    bg: "bg-red-50",
+    border: "border-red-200",
+    text: "text-red-900",
+    dark: "dark:bg-red-950 dark:border-red-800 dark:text-red-100",
+  },
+  {
+    name: "Blue",
+    bg: "bg-blue-50",
+    border: "border-blue-200",
+    text: "text-blue-900",
+    dark: "dark:bg-blue-950 dark:border-blue-800 dark:text-blue-100",
+  },
+  {
+    name: "Green",
+    bg: "bg-green-50",
+    border: "border-green-200",
+    text: "text-green-900",
+    dark: "dark:bg-green-950 dark:border-green-800 dark:text-green-100",
+  },
+  {
+    name: "Purple",
+    bg: "bg-purple-50",
+    border: "border-purple-200",
+    text: "text-purple-900",
+    dark: "dark:bg-purple-950 dark:border-purple-800 dark:text-purple-100",
+  },
+  {
+    name: "Pink",
+    bg: "bg-pink-50",
+    border: "border-pink-200",
+    text: "text-pink-900",
+    dark: "dark:bg-pink-950 dark:border-pink-800 dark:text-pink-100",
+  },
+];
 
 export default function TextBox({
   id,
   x,
   y,
+  title,
+  color,
   text,
   width,
   height,
@@ -35,131 +84,150 @@ export default function TextBox({
   onResize,
   onBlur,
 }: TextBoxProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const [boxWidth, setBoxWidth] = useState(width)
-  const [boxHeight, setBoxHeight] = useState(height)
-  const [isResizing, setIsResizing] = useState(false)
-  const resizeStartRef = useRef({ width: 0, height: 0, x: 0, y: 0 })
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [boxWidth, setBoxWidth] = useState(width);
+  const [boxHeight, setBoxHeight] = useState(height);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStartRef = useRef({ width: 0, height: 0, x: 0, y: 0 });
 
-  const MAX_WIDTH = 500
-  const MAX_HEIGHT = 400
-  const MAX_CHARS = 1000
+  const MAX_WIDTH = 500;
+  const MAX_HEIGHT = 400;
+  const MAX_CHARS = 1000;
 
   const calculateFontSize = (baseSize: number) => {
-    return Math.max(8, Math.min(32, baseSize))
-  }
+    return Math.max(8, Math.min(32, baseSize));
+  };
 
   const handleInput = useCallback((e: React.FormEvent<HTMLTextAreaElement>) => {
-    const target = e.target as HTMLTextAreaElement
-    
-    target.style.height = "auto"
-    
-    const newHeight = Math.min(target.scrollHeight, MAX_HEIGHT)
-    const finalHeight = Math.max(28, newHeight)
-    
-    target.style.height = finalHeight + "px"
-    setBoxHeight(finalHeight)
-    
-    target.style.overflow = newHeight >= MAX_HEIGHT ? "hidden" : "hidden"
-  }, [])
+    const target = e.target as HTMLTextAreaElement;
+
+    target.style.height = "auto";
+
+    const newHeight = Math.min(target.scrollHeight, MAX_HEIGHT);
+    const finalHeight = Math.max(28, newHeight);
+
+    target.style.height = finalHeight + "px";
+    setBoxHeight(finalHeight);
+
+    target.style.overflow = newHeight >= MAX_HEIGHT ? "hidden" : "hidden";
+  }, []);
+
+  const getBoxColorClasses = (color: string) => {
+    const colorObj = BOX_COLORS.find((c) => c.name === color);
+    return colorObj || BOX_COLORS[0];
+  };
 
   useEffect(() => {
     if (textareaRef.current) {
-      const textarea = textareaRef.current
-      
-      const firstLine = text.split('\n')[0] || 'Type here...'
-      const displayText = firstLine.length > 30 ? firstLine.substring(0, 30) : firstLine
-      
-      const span = document.createElement('span')
-      span.style.visibility = 'hidden'
-      span.style.position = 'absolute'
-      span.style.whiteSpace = 'pre'
-      span.style.fontSize = `${calculateFontSize(14)}px`
-      span.style.fontFamily = getComputedStyle(textarea).fontFamily
-      span.style.padding = '0.5rem'
-      span.textContent = displayText
-      
-      document.body.appendChild(span)
-      const textWidth = span.offsetWidth
-      document.body.removeChild(span)
-      
-      const newWidth = Math.max(150, Math.min(MAX_WIDTH, textWidth + 40))
-      setBoxWidth(newWidth)
-    }
-  }, [text])
+      const textarea = textareaRef.current;
 
-  const handleTextChange = useCallback((id: string, newText: string) => {
-    // Strictly enforce character limit
-    if (newText.length > MAX_CHARS) {
-      // Truncate to max characters
-      newText = newText.substring(0, MAX_CHARS)
-    }
-    
-    const lines = newText.split('\n')
-    if (lines.length > 10) {
-      newText = lines.slice(0, 10).join('\n')
-    }
-    
-    onTextChange(id, newText)
-  }, [onTextChange])
+      const firstLine = text.split("\n")[0] || "Type here...";
+      const displayText =
+        firstLine.length > 30 ? firstLine.substring(0, 30) : firstLine;
 
- 
-  const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsResizing(true)
-    resizeStartRef.current = {
-      width: boxWidth,
-      height: boxHeight,
-      x: e.clientX,
-      y: e.clientY
+      const span = document.createElement("span");
+      span.style.visibility = "hidden";
+      span.style.position = "absolute";
+      span.style.whiteSpace = "pre";
+      span.style.fontSize = `${calculateFontSize(14)}px`;
+      span.style.fontFamily = getComputedStyle(textarea).fontFamily;
+      span.style.padding = "0.5rem";
+      span.textContent = displayText;
+
+      document.body.appendChild(span);
+      const textWidth = span.offsetWidth;
+      document.body.removeChild(span);
+
+      const newWidth = Math.max(150, Math.min(MAX_WIDTH, textWidth + 40));
+      setBoxWidth(newWidth);
     }
-  }, [boxWidth, boxHeight])
+  }, [text]);
+
+  const handleTextChange = useCallback(
+    (id: string, newText: string) => {
+      // Strictly enforce character limit
+      if (newText.length > MAX_CHARS) {
+        // Truncate to max characters
+        newText = newText.substring(0, MAX_CHARS);
+      }
+
+      const lines = newText.split("\n");
+      if (lines.length > 10) {
+        newText = lines.slice(0, 10).join("\n");
+      }
+
+      onTextChange(id, newText);
+    },
+    [onTextChange]
+  );
+
+  const handleResizeMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsResizing(true);
+      resizeStartRef.current = {
+        width: boxWidth,
+        height: boxHeight,
+        x: e.clientX,
+        y: e.clientY,
+      };
+    },
+    [boxWidth, boxHeight]
+  );
 
   useEffect(() => {
-    if (!isResizing) return
+    if (!isResizing) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const deltaX = e.clientX - resizeStartRef.current.x
-      const deltaY = e.clientY - resizeStartRef.current.y
-      
-      const newWidth = Math.max(150, Math.min(MAX_WIDTH, resizeStartRef.current.width + deltaX))
-      const newHeight = Math.max(50, Math.min(MAX_HEIGHT, resizeStartRef.current.height + deltaY))
-      
-      setBoxWidth(newWidth)
-      setBoxHeight(newHeight)
-      
+      const deltaX = e.clientX - resizeStartRef.current.x;
+      const deltaY = e.clientY - resizeStartRef.current.y;
+
+      const newWidth = Math.max(
+        150,
+        Math.min(MAX_WIDTH, resizeStartRef.current.width + deltaX)
+      );
+      const newHeight = Math.max(
+        50,
+        Math.min(MAX_HEIGHT, resizeStartRef.current.height + deltaY)
+      );
+
+      setBoxWidth(newWidth);
+      setBoxHeight(newHeight);
+
       if (textareaRef.current) {
-        textareaRef.current.style.overflow = newHeight >= MAX_HEIGHT ? 'hidden' : 'hidden'
+        textareaRef.current.style.overflow =
+          newHeight >= MAX_HEIGHT ? "hidden" : "hidden";
       }
-    }
+    };
 
     const handleMouseUp = () => {
-      setIsResizing(false)
+      setIsResizing(false);
       if (onResize) {
-        onResize(id, boxWidth, boxHeight)
+        onResize(id, boxWidth, boxHeight);
       }
-    }
+    };
 
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [isResizing, id, onResize, boxWidth, boxHeight])
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing, id, onResize, boxWidth, boxHeight]);
 
   useEffect(() => {
     if (textareaRef.current) {
-      const target = textareaRef.current
-      target.style.height = "auto"
-      const newHeight = Math.min(target.scrollHeight, MAX_HEIGHT)
-      target.style.height = Math.max(28, newHeight) + "px"
-      setBoxHeight(Math.max(28, newHeight))
+      const target = textareaRef.current;
+      target.style.height = "auto";
+      const newHeight = Math.min(target.scrollHeight, MAX_HEIGHT);
+      target.style.height = Math.max(28, newHeight) + "px";
+      setBoxHeight(Math.max(28, newHeight));
     }
-  }, [])
+  }, []);
 
+  const boxColor = getBoxColorClasses(color);
   return (
     <div
       data-box-id={id}
@@ -171,7 +239,9 @@ export default function TextBox({
         top: `${y}px`,
         transform: isDragging ? "translateZ(0)" : "translateZ(0)",
         maxWidth: `${MAX_WIDTH}px`,
-        filter: isDragging ? "drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15))" : "none",
+        filter: isDragging
+          ? "drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15))"
+          : "none",
         willChange: isDragging ? "transform, left, top" : "auto",
       }}
     >
@@ -187,21 +257,13 @@ export default function TextBox({
           }`}
         style={{
           width: `${boxWidth}px`,
-          minHeight: '60px',
+          minHeight: "60px",
           maxHeight: `${MAX_HEIGHT}px`,
-          overflow: 'hidden',
+          overflow: "hidden",
         }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-1 px-1">
-          <div className="flex items-center space-x-1.5">
-            <div className="h-1.5 w-1.5 rounded-full bg-amber-500 opacity-60" />
-            <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-              Text Box
-            </span>
-          </div>
-        </div>
-  
+
+
         {/* Textarea container */}
         <div className="relative">
           <textarea
@@ -211,18 +273,23 @@ export default function TextBox({
             autoFocus={isSelected && text.length === 0}
             value={text}
             onChange={(e) => {
-              const newText = e.target.value
-              handleTextChange(id, newText)
+              const newText = e.target.value;
+              handleTextChange(id, newText);
             }}
             // onPaste={handlePaste}
             onFocus={() => onFocus(id)}
             onBlur={() => onBlur?.(id)}
             placeholder="Start typing..."
-            className="w-full resize-none bg-transparent px-1.5 py-0.5 text-neutral-800 
-              dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 
-              focus:outline-none overflow-hidden"
+            className={`w-full resize-none bg-transparent px-1.5 py-0.5 text-neutral-800 
+  dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 
+  focus:outline-none overflow-hidden 
+  ${boxColor.bg} ${boxColor.border} ${boxColor.text} ${boxColor.dark}
+`}
             style={{
-              height: `${Math.max(24, Math.min(boxHeight - 40, MAX_HEIGHT - 40))}px`,
+              height: `${Math.max(
+                24,
+                Math.min(boxHeight - 40, MAX_HEIGHT - 40)
+              )}px`,
               minHeight: "24px",
               maxHeight: `${MAX_HEIGHT - 40}px`,
               fontSize: `${calculateFontSize(14)}px`,
@@ -235,7 +302,7 @@ export default function TextBox({
             onInput={handleInput}
           />
         </div>
-  
+
         {/* Resize handle */}
         <div
           className="absolute bottom-0 right-0 h-4 w-4 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
@@ -245,16 +312,20 @@ export default function TextBox({
             opacity: isSelected ? 1 : 0,
           }}
         >
-          <svg viewBox="0 0 16 16" className="h-4 w-4 text-neutral-400" fill="currentColor">
-                      <path d="M14 14H12V12H14V14ZM14 10H12V8H14V10ZM10 14H8V12H10V14ZM14 6H12V4H14V6ZM10 10H8V8H10V10ZM6 14H4V12H6V14Z" />
-                    </svg>
+          <svg
+            viewBox="0 0 16 16"
+            className="h-4 w-4 text-neutral-400"
+            fill="currentColor"
+          >
+            <path d="M14 14H12V12H14V14ZM14 10H12V8H14V10ZM10 14H8V12H10V14ZM14 6H12V4H14V6ZM10 10H8V8H10V10ZM6 14H4V12H6V14Z" />
+          </svg>
         </div>
-  
+
         {/* Selection indicator */}
         {isSelected && (
           <div className="absolute -top-1 -left-1 -right-1 -bottom-1 border-2 border-amber-500/30 rounded-xl pointer-events-none" />
         )}
       </div>
     </div>
-  )
+  );
 }

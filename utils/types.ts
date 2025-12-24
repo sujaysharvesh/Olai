@@ -2,6 +2,8 @@
 
 export interface TextBox {
   id: string;
+  title: string;
+  color: string;
   x: number;
   y: number;
   text: string;

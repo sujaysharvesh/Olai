@@ -17,9 +17,9 @@ body {
   color: var(--foreground);
 }
 
-.dot {
+.dot-bg {
   background: white;
-  background-image: radial-gradient(black 1px, transparent 0);
-  background-size: 40px 40px;
+  background-image: radial-gradient(rgb(197, 187, 187) 1px, transparent 0);
+  background-size: 20px 20px;
   background-position: -19px -19px;
 }
