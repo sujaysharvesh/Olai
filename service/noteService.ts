@@ -20,6 +20,7 @@ export async function getNotes(userId: string) {
 export async function updateNotes(notes: TextBox[], userId: string) {
     const client = await pool.connect(); 
     try {
+      console.log("Updating notes for user:", notes);
       const currentNotes = await getAllNotesId(userId);
       const existingIds = currentNotes.map(r => r.id);
       const newIds = notes.map(n => n.id);

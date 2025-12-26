@@ -163,6 +163,7 @@ export default function TextBox({
 
   const handleResizeMouseDown = useCallback(
     (e: React.MouseEvent) => {
+      if(e.button === 0) return;
       e.preventDefault();
       e.stopPropagation();
       setIsResizing(true);
@@ -228,6 +229,7 @@ export default function TextBox({
   }, []);
 
   const boxColor = getBoxColorClasses(color);
+  // console.log("TextBox Color:", title);
   // console.log("Rendering TextBox:", boxColor);
   return (
     <div
@@ -267,26 +269,50 @@ export default function TextBox({
       >
         {/* Textarea container */}
         <div className="relative">
-        {title && <p className={`text-xl font-semibold mb-1 px-2 py-0.5 ${boxColor.text}`}>{title}</p>}
+          {title && (
+            <div
+              className={`
+      w-full
+      text-xl
+      font-semibold
+      mb-1
+      px-2
+      py-0.5
+      bg-transparent
+      truncate
+      ${boxColor.text}
+    `}
+              title={title} // Shows full title on hover
+            >
+              {title.split("\n")[0]}
+              {title.includes("\n") && "..."}
+            </div>
+          )}
+
+          {/* Main content textarea */}
           <textarea
             ref={textareaRef}
             data-box-id={id}
             maxLength={MAX_CHARS}
             autoFocus={isSelected && text.length === 0}
             value={text}
-            onChange={(e) => {
-              const newText = e.target.value;
-              handleTextChange(id, newText);
-            }}
-            // onPaste={handlePaste}
+            onChange={(e) => handleTextChange(id, e.target.value)}
             onFocus={() => onFocus(id)}
             onBlur={() => onBlur?.(id)}
             placeholder="Start typing..."
-            className={`w-full resize-none bg-transparent px-1.5 py-0.5 
-  dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 
-  focus:outline-none overflow-hidden 
-  ${boxColor.bg} ${boxColor.border} ${boxColor.text} ${boxColor.dark}
-`}
+            className={`
+      w-full
+      resize-none
+      bg-transparent
+      px-1.5
+      py-0.5
+      focus:outline-none
+      overflow-hidden
+      dark:text-neutral-100
+      placeholder:text-neutral-400
+      dark:placeholder:text-neutral-500
+      ${boxColor.bg} ${boxColor.border} ${boxColor.text} ${boxColor.dark}
+    `}
             style={{
               height: `${Math.max(
                 24,

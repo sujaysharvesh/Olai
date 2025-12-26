@@ -64,7 +64,7 @@ const BOX_COLORS = [
     text: "text-pink-900",
     dark: "dark:bg-pink-950 dark:border-pink-800 dark:text-pink-100",
   },
-]
+];
 
 export default function CombinedCanvas() {
   const { data: session, status } = useSession();
@@ -85,11 +85,13 @@ export default function CombinedCanvas() {
     height: 0,
   });
   const [didDrag, setDidDrag] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   const router = useRouter();
-  const titleInputRef = useRef<HTMLInputElement>(null)
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isResizingRef = useRef(false);
 
   const MIN_ZOOM = 0.25;
   const MAX_ZOOM = 3;
@@ -151,10 +153,19 @@ export default function CombinedCanvas() {
   // Handle box click
   const handleBoxClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (didDrag) return;
+  
+    if (
+      didDrag ||
+      isResizing ||
+      isResizingRef.current 
+    ) {
+      return;
+    }
+  
     setSelectedId(id);
     setEditingId(id);
   };
+  
 
   // Handle mouse down for dragging
   const handleMouseDown = (e: React.MouseEvent, id: string) => {
@@ -173,6 +184,7 @@ export default function CombinedCanvas() {
     setSelectedId(id);
     setDraggingId(id);
     setDidDrag(false);
+    setIsResizing(false);
 
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -183,21 +195,26 @@ export default function CombinedCanvas() {
     });
   };
 
-  const handleResizeMouseDown = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    e.preventDefault();
-    
-    const box = textBoxes.find((b) => b.id === id);
-    if (!box) return;
 
-    setResizingId(id);
-    setResizeStart({
-      x: e.clientX,
-      y: e.clientY,
-      width: box.width,
-      height: box.height,
-    });
-  };
+  // const handleResizeMouseDown = (e: React.MouseEvent, id: string) => {
+  //   if (e.button !== 0) return; 
+  //   e.stopPropagation();
+  //   e.preventDefault();
+  //   isResizingRef.current = true; 
+
+  //   setIsResizing(true);
+
+  //   const box = textBoxes.find((b) => b.id === id);
+  //   if (!box) return;
+
+  //   setResizingId(id);
+  //   setResizeStart({
+  //     x: e.clientX,
+  //     y: e.clientY,
+  //     width: box.width,
+  //     height: box.height,
+  //   });
+  // };
 
   // Handle panning start
   const handleSpaceDrag = (e: React.MouseEvent) => {
@@ -244,7 +261,7 @@ export default function CombinedCanvas() {
       if (resizingId) {
         const deltaX = (e.clientX - resizeStart.x) / zoom;
         const deltaY = (e.clientY - resizeStart.y) / zoom;
-        
+
         const newWidth = Math.max(120, resizeStart.width + deltaX);
         const newHeight = Math.max(28, resizeStart.height + deltaY);
 
@@ -296,7 +313,12 @@ export default function CombinedCanvas() {
     setDraggingId(null);
     setIsPanning(false);
     setResizingId(null);
-    setTimeout(() => setDidDrag(false), 100);
+    
+    setTimeout(() => {
+      setDidDrag(false);
+      setIsResizing(false);
+      isResizingRef.current = false;
+    }, 50);
   }, []);
 
   // Close popover
@@ -349,8 +371,10 @@ export default function CombinedCanvas() {
   }, []);
 
   const handleColorChange = (id: string, color: string) => {
-    setTextBoxes((prev) => prev.map((box) => (box.id === id ? { ...box, color } : box)))
-  }
+    setTextBoxes((prev) =>
+      prev.map((box) => (box.id === id ? { ...box, color } : box))
+    );
+  };
 
   // Focus textarea when editing
   useEffect(() => {
@@ -384,12 +408,24 @@ export default function CombinedCanvas() {
   }, [selectedId]);
 
   const handleTitleChange = (id: string, title: string) => {
-    setTextBoxes((prev) => prev.map((box) => (box.id === id ? { ...box, title } : box)))
-  }
+    setTextBoxes((prev) =>
+      prev.map((box) => (box.id === id ? { ...box, title } : box))
+    );
+  };
 
   const editingBox = textBoxes.find((b) => b.id === editingId);
   const gridSize = 20 * zoom;
-  const editingBoxColor = editingBox ? BOX_COLORS.find((c) => c.name === editingBox.color) : BOX_COLORS[0]
+  const editingBoxColor = editingBox
+    ? BOX_COLORS.find((c) => c.name === editingBox.color)
+    : BOX_COLORS[0];
+
+  useEffect(() => {
+    const el = titleInputRef.current;
+    if (!el) return;
+
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [editingBox?.title]);
 
   return (
     <div className="flex h-screen flex-col bg-neutral-100 dark:bg-neutral-900">
@@ -452,7 +488,7 @@ export default function CombinedCanvas() {
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
               <div className="text-xs text-neutral-600 dark:text-neutral-400">
                 <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                  {session?.user.name?.split(' ')[0] || 'User'}
+                  {session?.user.name?.split(" ")[0] || "User"}
                 </span>
                 <span className="mx-1">•</span>
                 Online
@@ -528,13 +564,22 @@ export default function CombinedCanvas() {
                 />
 
                 {/* Resize handle */}
-                {selectedId === box.id && (
+                {/* {selectedId === box.id && (
                   <div
                     className="absolute bottom-0 right-0 h-4 w-4 cursor-se-resize opacity-50 hover:opacity-100 transition-opacity"
-                    onMouseDown={(e) => handleResizeMouseDown(e, box.id)}
-                  >
-                 </div>
-                )}
+                      onMouseDown={(e) => { return; handleResizeMouseDown(e, box.id)}
+                    }
+                    onClick={(e) => {
+                      isResizingRef.current = true;
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                    onMouseUp={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                  ></div>
+                )} */}
               </div>
             ))}
 
@@ -566,7 +611,11 @@ export default function CombinedCanvas() {
       <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-1 text-xs text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
         <div>
           {selectedId
-            ? `Selected box at (${textBoxes.find((b) => b.id === selectedId)?.x.toFixed(0)}, ${textBoxes.find((b) => b.id === selectedId)?.y.toFixed(0)})`
+            ? `Selected box at (${textBoxes
+                .find((b) => b.id === selectedId)
+                ?.x.toFixed(0)}, ${textBoxes
+                .find((b) => b.id === selectedId)
+                ?.y.toFixed(0)})`
             : "No selection"}
         </div>
         <div className="flex items-center gap-4">
@@ -593,14 +642,41 @@ export default function CombinedCanvas() {
             </button>
 
             <div className="relative">
-            <input
-              ref={titleInputRef}
-              type="text"
-              value={editingBox.title}
-              onChange={(e) => handleTitleChange(editingId, e.target.value)}
-              placeholder="Add a title..."
-              className={`w-full mb-3 bg-transparent text-lg font-semibold placeholder:opacity-40 focus:outline-none`}
-            />
+              <textarea
+                ref={titleInputRef}
+                value={editingBox.title}
+                onChange={(e) => {
+                  const newTitle = e.target.value;
+                  if (newTitle.length <= 100) {
+                    handleTitleChange(editingId, newTitle);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.preventDefault();
+                }}
+                placeholder="Add a title..."
+                rows={1}
+                className="
+    w-full
+    mb-3
+    bg-transparent
+    text-lg
+    font-semibold
+    placeholder:opacity-40
+    focus:outline-none
+    resize-none
+    leading-tight
+    break-words
+    whitespace-pre-wrap
+  "
+                style={{ overflow: "hidden" }}
+                onInput={(e) => {
+                  const el = e.currentTarget;
+                  el.style.height = "auto";
+                  el.style.height = el.scrollHeight + "px";
+                }}
+              />
+
               <textarea
                 ref={textareaRef}
                 value={editingBox.text}
@@ -625,10 +701,19 @@ export default function CombinedCanvas() {
                       "Enter",
                     ];
 
-                    const isSelectAll = e.key === "a" && (e.ctrlKey || e.metaKey);
-                    const isCopyCut = (e.key === "c" || e.key === "x") && (e.ctrlKey || e.metaKey);
+                    const isSelectAll =
+                      e.key === "a" && (e.ctrlKey || e.metaKey);
+                    const isCopyCut =
+                      (e.key === "c" || e.key === "x") &&
+                      (e.ctrlKey || e.metaKey);
 
-                    if (!allowedKeys.includes(e.key) && !isSelectAll && !isCopyCut && !e.ctrlKey && !e.metaKey) {
+                    if (
+                      !allowedKeys.includes(e.key) &&
+                      !isSelectAll &&
+                      !isCopyCut &&
+                      !e.ctrlKey &&
+                      !e.metaKey
+                    ) {
                       e.preventDefault();
                     }
                   }
@@ -645,17 +730,22 @@ export default function CombinedCanvas() {
 
                   const newText = textBefore + pastedText + textAfter;
 
-                  const finalText = newText.length > 1000
-                    ? textBefore + pastedText.substring(0, 1000 - textBefore.length - textAfter.length) + textAfter
-                    : newText;
+                  const finalText =
+                    newText.length > 1000
+                      ? textBefore +
+                        pastedText.substring(
+                          0,
+                          1000 - textBefore.length - textAfter.length
+                        ) +
+                        textAfter
+                      : newText;
 
                   handleTextChange(editingId, finalText);
                 }}
                 placeholder="Type your note here..."
-                className="min-h-[300px] w-full resize-none bg-transparent text-base text-neutral-800 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
+                className="min-h-[300px] w-full resize-none bg-transparent text-base placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
                 maxLength={1000}
               />
-              
             </div>
             <div className="mt-4 border-t border-current opacity-20 pt-4">
               <p className="text-xs font-semibold mb-2 opacity-60">Color</p>
@@ -663,7 +753,9 @@ export default function CombinedCanvas() {
                 {BOX_COLORS.map((colorOption) => (
                   <button
                     key={colorOption.name}
-                    onClick={() => handleColorChange(editingId, colorOption.name)}
+                    onClick={() =>
+                      handleColorChange(editingId, colorOption.name)
+                    }
                     className={`w-6 h-6 rounded-full border-2 transition-all ${
                       editingBox.color === colorOption.name
                         ? "border-current ring-2 ring-offset-1"
@@ -674,22 +766,21 @@ export default function CombinedCanvas() {
                         colorOption.name === "Amber"
                           ? "#fef3c7"
                           : colorOption.name === "Red"
-                            ? "#fee2e2"
-                            : colorOption.name === "Blue"
-                              ? "#dbeafe"
-                              : colorOption.name === "Green"
-                                ? "#dcfce7"
-                                : colorOption.name === "Purple"
-                                  ? "#f3e8ff"
-                                  : "#fce7f3",
+                          ? "#fee2e2"
+                          : colorOption.name === "Blue"
+                          ? "#dbeafe"
+                          : colorOption.name === "Green"
+                          ? "#dcfce7"
+                          : colorOption.name === "Purple"
+                          ? "#f3e8ff"
+                          : "#fce7f3",
                     }}
                     title={colorOption.name}
                   />
                 ))}
               </div>
             </div>
-            
-            
+
             <div className="mt-3 flex items-center justify-between border-t border-neutral-200 px-2 pt-2 dark:border-neutral-700">
               <span className="text-xs text-neutral-400">
                 Press Escape to close

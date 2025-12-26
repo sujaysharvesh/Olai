@@ -71,6 +71,8 @@ interface NoteSyncProps {
       try {
         setIsSyncing(true);
 
+        console.log("notes", notes)
+
   
         const response = await fetch("/api/notes/sync", {
           method: "POST",

@@ -37,18 +37,20 @@ export async function getAllNotesId(userId: string) {
 
 export async function updateUserNotes(box: TextBox, userId: string) {
     const query = `
-            INSERT INTO notes (id, user_id, x, y, width, height, text, created_at, updated_at)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+            INSERT INTO notes (id, user_id, x, y, width, height, text, created_at, updated_at, color, title)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
             ON CONFLICT (id) DO UPDATE SET
               x=EXCLUDED.x,
               y=EXCLUDED.y,
               width=EXCLUDED.width,
               height=EXCLUDED.height,
+              color = EXCLUDED.color,
+              title = EXCLUDED.title,
               text=EXCLUDED.text,
               updated_at=NOW()
           `;
     
-    const values = [box.id, userId, box.x, box.y, box.width, box.height, box.text, new Date(), new Date()];
+    const values = [box.id, userId, box.x, box.y, box.width, box.height, box.text, new Date(), new Date(), box.color, box.title];
     
     const result = await pool.query(query, values);
       
