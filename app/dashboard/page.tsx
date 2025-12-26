@@ -87,7 +87,8 @@ export default function CombinedCanvas() {
   const [didDrag, setDidDrag] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const router = useRouter();
-  const titleInputRef = useRef<HTMLInputElement>(null);
+  const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
+
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -430,7 +431,21 @@ export default function CombinedCanvas() {
   return (
     <div className="flex h-screen flex-col bg-neutral-100 dark:bg-neutral-900">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b-2 border-neutral-200/80 bg-[#F7F5F3] px-4 py-3 dark:border-neutral-700/80 dark:bg-neutral-900">
+      <div
+  className="
+    flex items-start justify-between
+    border-b border-neutral-200/40 dark:border-neutral-700/40
+    px-4 py-3
+    backdrop-blur-sm
+    bg-dots
+    absolute bg-dots inset-0
+  "
+  style={{
+    backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
+    backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
+  }}
+>
+
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-sm font-bold text-white shadow-sm">
             O
@@ -441,7 +456,7 @@ export default function CombinedCanvas() {
             </span>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
               Modern note-keeping space
-            </span>
+            </span> 
           </div>
         </div>
 
@@ -508,10 +523,10 @@ export default function CombinedCanvas() {
       <div className="relative flex-1 overflow-hidden">
         {/* Background Grid - FIXED */}
         <div
-          className="absolute inset-0"
+          className="absolute bg-dots inset-0"
           style={{
-            backgroundImage:
-              "radial-gradient(circle, rgb(197, 187, 187) 1px, transparent 1px)",
+            // backgroundImage:
+            //   "radial-gradient(circle, rgb(197, 187, 187) 1px, transparent 1px)",
             backgroundSize: `${gridSize}px ${gridSize}px`,
             backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
           }}

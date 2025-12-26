@@ -5,7 +5,6 @@ import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-
 function Badge({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div className="px-[14px] py-[6px] bg-white shadow-[0px_0px_0px_4px_rgba(55,50,47,0.05)] overflow-hidden rounded-[90px] flex justify-start items-center gap-[8px] border border-[rgba(2,6,23,0.08)] shadow-xs">
@@ -61,20 +60,17 @@ export default function LandingPage() {
   return (
     <div className="w-full min-h-screen relative bg-[#F7F5F3] overflow-x-hidden flex flex-col justify-start items-center">
       <div className="relative flex flex-col justify-start items-center w-full">
-        {/* Main container with proper margins */}
         <div className="w-full max-w-none px-4 sm:px-6 md:px-8 lg:px-0 lg:max-w-[1060px] lg:w-[1060px] relative flex flex-col justify-start items-start min-h-screen">
-          {/* Left vertical line */}
           <div className="w-[2px] h-full absolute left-4 sm:left-6 md:left-8 lg:left-0 top-0 bg-[rgba(55,50,47,0.12)] shadow-[1px_0px_0px_white] z-0"></div>
 
-          {/* Right vertical line */}
           <div className="w-[2px] h-full absolute right-4 sm:right-6 md:right-8 lg:right-0 top-0 bg-[rgba(55,50,47,0.12)] shadow-[1px_0px_0px_white] z-0"></div>
 
           <div className="self-stretch overflow-hidden border-b border-[rgba(55,50,47,0.06)] flex flex-col justify-center items-center gap-4 sm:gap-6 md:gap-8 lg:gap-[66px] relative z-10">
             {/* Navigation */}
-            <div className="w-full h-12 sm:h-14 md:h-16 lg:h-[84px] absolute left-0 top-0 flex justify-center items-center z-20 px-6 sm:px-8 md:px-12 lg:px-0">
+            {/* <div className="w-full h-12 sm:h-14 md:h-16 lg:h-[84px] absolute left-0 top-0 flex justify-center items-center z-20 px-6 sm:px-8 md:px-12 lg:px-0">
               <div className="w-full h-0 absolute left-0 top-6 sm:top-7 md:top-8 lg:top-[42px] border-t border-[rgba(55,50,47,0.12)] shadow-[0px_1px_0px_white]"></div>
 
-              <div className="w-full max-w-[calc(100%-31px)] sm:max-w-[calc(100%-48px)] md:max-w-[calc(100%-64px)] lg:max-w-[1000px] lg:w-[700px] h-10 sm:h-11 md:h-12 py-1.5 sm:py-2 px-3 sm:px-4 md:px-4 pr-2 sm:pr-3 bg-[#F7F5F3] backdrop-blur-lg shadow-[0px_0px_0px_2px_#ffffff] overflow-hidden rounded-[20px] flex justify-between items-center relative z-30">
+              <div className="w-full max-w-[calc(100%-31px)] sm:max-w-[calc(100%-48px)] md:max-w-[calc(100%-64px)] lg:max-w-[1000px] lg:w-[700px] h-10 sm:h-11 md:h-12 py-1.5 sm:py-2 px-3 sm:px-4 md:px-4 pr-2 sm:pr-3 bg-[#F7F5F3] backdrop-blur-lg shadow-[0px_0px_0px_2px_gray] overflow-hidden flex justify-between items-center relative z-30">
                 <div className="flex justify-center items-center">
                   <div className="flex justify-start items-center">
                     <div className="flex flex-col justify-center text-[#2F3037] text-sm sm:text-base md:text-lg lg:text-2xl font-medium leading-5 font-serif">
@@ -101,17 +97,94 @@ export default function LandingPage() {
                 </div>
                 <div className="h-8 sm:h-9 md:h-10 flex justify-start items-start gap-2 sm:gap-3">
                   <div className="h-full px-4 sm:px-5 md:px-6 lg:px-7 py-2 sm:py-2.5 bg-white shadow-[0px_1px_2px_rgba(55,50,47,0.12)] overflow-hidden rounded-full flex justify-center items-center">
-                    <button onClick={() => router.push('/login')} className="flex flex-col justify-center text-[#37322F] text-sm sm:text-sm md:text-[15px] font-medium leading-5 font-sans">
+                    <button
+                      onClick={() => router.push("/login")}
+                      className="flex flex-col justify-center text-[#37322F] text-sm sm:text-sm md:text-[15px] font-medium leading-5 font-sans"
+                    >
                       Log in
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
+            <div className="pt-16 sm:pt-20 md:pt-24 lg:pt-[50px] pb-10 sm:pb-12 md:pb-16 flex flex-col justify-start items-center px-1 sm:px-4 md:px-8 lg:px-0 w-full sm:pl-0 sm:pr-0 pl-0 pr-0">
+              <div className="self-stretch border-b border-t border-[#a6a5a3] flex justify-center items-center gap-0">
+                <div className="flex-1 h-20 relative overflow-hidden self-stretch">
+                  <div className="absolute inset-0">
+                  {Array.from({ length: 60 }).map((_, i) => (
+                      <div
+                        key={`middle-${i}`}
+                        className="absolute w-px bg-black/15 rotate-[35deg] origin-top-left"
+                        style={{
+                          left: `${i * 8}px`,
+                          top: `-${30 + i * 0.3}px`,
+                          height: `${150 + i * 1}px`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
 
-            {/* Hero Section */}
-            <div className="pt-16 sm:pt-20 md:pt-24 lg:pt-[216px] pb-8 sm:pb-12 md:pb-16 flex flex-col justify-start items-center px-2 sm:px-4 md:px-8 lg:px-0 w-full sm:pl-0 sm:pr-0 pl-0 pr-0">
-              <div className="w-full max-w-[800px] lg:w-[800px] text-center flex justify-center flex-col text-[#37322F] text-[24px] xs:text-[28px] sm:text-[36px] md:text-[52px] lg:text-[40px] font-normal leading-[1.1] sm:leading-[1.15] md:leading-[1.2] lg:leading-24 font-serif px-1 sm:px-4 md:px-0">
+                <div className="h-20 border-l border-black/15" />
+                <div className="px-8 py-2 flex-shrink-0">
+                  <h1 className="text-6xl font-light font-serif text-gray-900 whitespace-nowrap tracking-wide">
+                    Olai
+                  </h1>
+                </div>
+
+                <div className="h-20 border-l border-black/15" />
+
+                <div className="px-8 py-2 flex-shrink-0 group relative">
+                  <h1 className="text-sm font-medium text-gray-700 whitespace-nowrap hover: text-gray-900 transition-all duration-300 cursor-pointer tracking-wide">
+                    Features
+                  </h1>
+                  <div className="absolute bottom-0 left-8 right-8 h-0.5 bg-black/30 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                </div>
+                <div className="h-20 border-l border-black/15" />
+                <div className="flex-1 h-20 relative overflow-hidden">
+                  <div className="absolute inset-0">
+                    {Array.from({ length: 60 }).map((_, i) => (
+                      <div
+                        key={`middle-${i}`}
+                        className="absolute w-px bg-black/15 rotate-[35deg] origin-top-left"
+                        style={{
+                          left: `${i * 8}px`,
+                          top: `-${30 + i * 0.3}px`,
+                          height: `${150 + i * 1}px`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="h-20 border-l border-black/15" />
+
+                <div className="px-8 py-2 flex-shrink-0 group relative">
+                  <h1 className="text-sm font-medium text-gray-700 whitespace-nowrap hover:text-gray-900 transition-all duration-300 cursor-pointer tracking-wide">
+                    Login
+                  </h1>
+                  <div className="absolute bottom-0 left-8 right-8 h-0.5 bg-black/30 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                </div>
+
+                <div className="h-20 border-l border-black/15" />
+
+                <div className="flex-1 h-20 relative overflow-hidden">
+                  <div className="absolute inset-0">
+                    {Array.from({ length: 100 }).map((_, i) => (
+                      <div
+                        key={`right-${i}`}
+                        className="absolute w-px bg-black/15 rotate-[35deg] origin-top-left"
+                        style={{
+                          left: `${i * 8}px`,
+                          top: `-${30 + i * 0.3}px`,
+                          height: `${150 + i * 1}px`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="w-full max-w-[800px] lg:w-[800px] text-center flex justify-center mt-20 flex-col text-[#37322F] text-[24px] xs:text-[28px] sm:text-[36px] md:text-[52px] lg:text-[40px] font-normal leading-[1.1] sm:leading-[1.15] md:leading-[1.2] lg:leading-24 font-serif px-2 sm:px-4 md:px-0">
                 Designed as a free, flexible space where ideas evolve naturally
                 over time.
               </div>
@@ -200,11 +273,11 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="self-stretch border-t border-[#E0DEDB] border-b border-[#E0DEDB] flex justify-center items-start">
+              <div className="self-stretch border-b border-t border-[#E0DEDB] flex justify-center items-start">
                 <div className="w-4 sm:w-6 md:w-8 lg:w-12 self-stretch relative overflow-hidden">
                   {/* Left decorative pattern */}
                   <div className="w-[120px] sm:w-[140px] md:w-[162px] left-[-40px] sm:left-[-50px] md:left-[-58px] top-[-120px] absolute flex flex-col justify-start items-start">
-                    {Array.from({ length: 50 }).map((_, i) => (
+                    {Array.from({ length: 100 }).map((_, i) => (
                       <div
                         key={i}
                         className="self-stretch h-3 sm:h-4 rotate-[-45deg] origin-top-left outline outline-[0.5px] outline-[rgba(3,7,18,0.08)] outline-offset-[-0.25px]"
@@ -214,7 +287,6 @@ export default function LandingPage() {
                 </div>
 
                 <div className="flex-1 px-0 sm:px-2 md:px-0 flex flex-col md:flex-row justify-center items-stretch gap-0">
-                  {/* Feature Cards */}
                   <FeatureCard
                     title="Plan your schedules"
                     description="Streamline customer subscriptions and billing with automated scheduling tools."
@@ -249,7 +321,6 @@ export default function LandingPage() {
                     ))}
                   </div>
                 </div>
-                
               </div>
             </div>
           </div>
@@ -275,7 +346,7 @@ function FeatureCard({
 }) {
   return (
     <div
-      className={`w-full md:flex-1 self-stretch px-6 py-5 overflow-hidden flex flex-col justify-start items-start gap-2 cursor-pointer relative border-b md:border-b-0 last:border-b-0 ${
+      className={`w-full md:flex-1 self-stretch px-6 py-5 overflow-hidden bg-slate-50 flex flex-col justify-start items-start gap-2 cursor-pointer relative border-b md:border-b-0 last:border-b-0 ${
         isActive
           ? "bg-white shadow-[0px_0px_0px_0.75px_#E0DEDB_inset]"
           : "border-l-0 border-r-0 md:border border-[#E0DEDB]/80"
