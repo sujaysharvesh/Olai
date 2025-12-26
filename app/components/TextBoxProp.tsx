@@ -228,6 +228,7 @@ export default function TextBox({
   }, []);
 
   const boxColor = getBoxColorClasses(color);
+  // console.log("Rendering TextBox:", boxColor);
   return (
     <div
       data-box-id={id}
@@ -247,13 +248,15 @@ export default function TextBox({
     >
       <div
         onMouseDown={(e) => onMouseDown(e, id)}
-        className={`group relative rounded-xl border-2 bg-gradient-to-br from-white via-white to-neutral-50 
-          dark:from-neutral-800 dark:via-neutral-800 dark:to-neutral-900 
-          shadow-lg p-1.5
+        className={`group relative rounded-xl border-2 bg-gradient-to-br  ${
+          boxColor.bg
+        } ${boxColor.dark}
+         
+          shadow-sm p-1.5
           ${
             isSelected
-              ? "border-amber-500/80 shadow-xl shadow-amber-500/10 ring-2 ring-amber-500/30"
-              : "border-neutral-200/80 hover:border-amber-400/60 hover:shadow-xl dark:border-neutral-700/80"
+              ? `${boxColor.border} shadow-md`
+              : "border-neutral-200/80 hover:shadow-xl "
           }`}
         style={{
           width: `${boxWidth}px`,
@@ -262,10 +265,9 @@ export default function TextBox({
           overflow: "hidden",
         }}
       >
-
-
         {/* Textarea container */}
         <div className="relative">
+        {title && <p className={`text-xl font-semibold mb-1 px-2 py-0.5 ${boxColor.text}`}>{title}</p>}
           <textarea
             ref={textareaRef}
             data-box-id={id}
@@ -280,7 +282,7 @@ export default function TextBox({
             onFocus={() => onFocus(id)}
             onBlur={() => onBlur?.(id)}
             placeholder="Start typing..."
-            className={`w-full resize-none bg-transparent px-1.5 py-0.5 text-neutral-800 
+            className={`w-full resize-none bg-transparent px-1.5 py-0.5 
   dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 
   focus:outline-none overflow-hidden 
   ${boxColor.bg} ${boxColor.border} ${boxColor.text} ${boxColor.dark}
@@ -322,9 +324,9 @@ export default function TextBox({
         </div>
 
         {/* Selection indicator */}
-        {isSelected && (
+        {/* {isSelected && (
           <div className="absolute -top-1 -left-1 -right-1 -bottom-1 border-2 border-amber-500/30 rounded-xl pointer-events-none" />
-        )}
+        )} */}
       </div>
     </div>
   );
