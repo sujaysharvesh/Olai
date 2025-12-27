@@ -2,15 +2,17 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
-import ThemeToggle from "../components/ThemeToggle";
 import TextBox from "../components/TextBoxProp";
 import { useRouter } from "next/navigation";
-import Logout from "../components/LogoutButton";
 import { NoteSync } from "./noteSync";
 import { fetchNotes } from "./fetchNotes";
-import { User } from "@/utils/types";
 import { useSession } from "next-auth/react";
+import FolderDropdown from "../components/Folder";
 import Profile from "../components/profile";
+import { useFolderContext } from "../components/FolderContext";
+import { registerUser } from "@/service/userService";
+import { useZoomContext } from "../components/zoomContext";
+import ZoomControls from "../components/zoomController";
 
 interface TextBox {
   id: string;
@@ -69,15 +71,27 @@ const BOX_COLORS = [
 
 export default function CombinedCanvas() {
   const { data: session, status } = useSession();
+  const { isOpen: isFolderOpne } = useFolderContext();
+  const {
+    zoom,
+    setZoom,
+    panOffset,
+    setPanOffset,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+    ZOOM_STEP,
+    MIN_ZOOM,
+    MAX_ZOOM,
+  } = useZoomContext();
+
   const [textBoxes, setTextBoxes] = useState<TextBox[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [resizingId, setResizingId] = useState<string | null>(null);
   const [resizeStart, setResizeStart] = useState({
     x: 0,
@@ -90,22 +104,9 @@ export default function CombinedCanvas() {
   const router = useRouter();
   const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-
   const canvasRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isResizingRef = useRef(false);
-
-  const MIN_ZOOM = 0.25;
-  const MAX_ZOOM = 3;
-  const ZOOM_STEP = 0.25;
-
-  // Zoom functions
-  const zoomIn = () => setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
-  const zoomOut = () => setZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
-  const resetZoom = () => {
-    setZoom(1);
-    setPanOffset({ x: 0, y: 0 });
-  };
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -155,19 +156,14 @@ export default function CombinedCanvas() {
   // Handle box click
   const handleBoxClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-  
-    if (
-      didDrag ||
-      isResizing ||
-      isResizingRef.current 
-    ) {
+
+    if (didDrag || isResizing || isResizingRef.current) {
       return;
     }
-  
+
     setSelectedId(id);
     setEditingId(id);
   };
-  
 
   // Handle mouse down for dragging
   const handleMouseDown = (e: React.MouseEvent, id: string) => {
@@ -197,12 +193,11 @@ export default function CombinedCanvas() {
     });
   };
 
-
   // const handleResizeMouseDown = (e: React.MouseEvent, id: string) => {
-  //   if (e.button !== 0) return; 
+  //   if (e.button !== 0) return;
   //   e.stopPropagation();
   //   e.preventDefault();
-  //   isResizingRef.current = true; 
+  //   isResizingRef.current = true;
 
   //   setIsResizing(true);
 
@@ -233,6 +228,9 @@ export default function CombinedCanvas() {
   };
 
   const handleWheel = (e: React.WheelEvent) => {
+    if (isFolderOpne) {
+      return;
+    }
     e.preventDefault();
 
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -315,7 +313,7 @@ export default function CombinedCanvas() {
     setDraggingId(null);
     setIsPanning(false);
     setResizingId(null);
-    
+
     setTimeout(() => {
       setDidDrag(false);
       setIsResizing(false);
@@ -432,17 +430,16 @@ export default function CombinedCanvas() {
   return (
     <div className="flex h-screen flex-col bg-neutral-100 dark:bg-neutral-900">
       {/* <div
-  className="
+        className="
     flex items-start justify-between
     border-b border-neutral-200/40 dark:border-neutral-700/40
     px-4 py-3
   "
-  style={{
-    backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
-    backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
-  }}
->
-
+        style={{
+          backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
+          backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
+        }}
+      >
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-sm font-bold text-white shadow-sm">
             O
@@ -453,7 +450,7 @@ export default function CombinedCanvas() {
             </span>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
               Modern note-keeping space
-            </span> 
+            </span>
           </div>
         </div>
 
@@ -489,8 +486,6 @@ export default function CombinedCanvas() {
           </div>
 
           <div className="flex items-center gap-3">
-            <ThemeToggle />
-
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
               <div className="text-xs text-neutral-600 dark:text-neutral-400">
@@ -504,7 +499,6 @@ export default function CombinedCanvas() {
 
             <div className="flex items-center gap-1">
               <NoteSync notes={textBoxes} />
-              <Logout />
             </div>
           </div>
         </div>
@@ -522,7 +516,6 @@ export default function CombinedCanvas() {
             backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
           }}
         />
-        
 
         {/* Interactive Canvas Layer */}
         <div
@@ -537,13 +530,18 @@ export default function CombinedCanvas() {
           }`}
         >
           <div className="mt-10 px-10 justify-between  flex">
-              <div className="items-start">
-              <Logout/>
-              </div>
-              <div className="items-end">
-              <Profile />
-              </div>
+            <div className="items-start">
+              <FolderDropdown />
             </div>
+            <div className="items-end">
+              <Profile />
+            </div>
+          </div>
+          <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
+            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 backdrop-blur-sm">
+              <ZoomControls />
+            </div>
+          </div>
           {/* Text Boxes Container */}
           <div
             style={{
@@ -596,7 +594,6 @@ export default function CombinedCanvas() {
                   ></div>
                 )} */}
               </div>
-              
             ))}
             {/* Empty state - REMOVED instructions to fix click issue */}
             {textBoxes.length === 0 && (

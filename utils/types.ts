@@ -37,3 +37,33 @@ export interface LoginResponse {
   token: string;
   user: User;
 }
+
+export interface FolderItem {
+  id: string;
+  name: string;
+}
+
+export interface FolderContextType {
+  
+  isOpen: boolean;
+  setIsOpen : (value : boolean) => void;
+  currentFolder : FolderItem;
+  setCurrentFolder : (folder: FolderItem) => void;
+  folders: FolderItem[];
+  setFolders : (folders: FolderItem[]) => void;
+
+}
+
+export interface ZoomContextType {
+  zoom: number;
+  setZoom: (value: number) => void;
+  panOffset: { x: number; y: number };
+  setPanOffset: (offset: { x: number; y: number }) => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
+  ZOOM_STEP: number;
+  MAX_ZOOM: number;
+  MIN_ZOOM: number;
+
+}

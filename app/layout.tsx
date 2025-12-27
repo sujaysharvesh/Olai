@@ -3,6 +3,9 @@ import { Geist, Geist_Mono, Libre_Caslon_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import Provider from "./provider";
+import AuthProvider from "./provider";
+import { FolderProvider } from "./components/FolderContext";
+import { ZoomProvider } from "./components/zoomContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +39,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${libreCaslonDisplay.variable} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Provider>{children}</Provider>
+          <AuthProvider>
+            <FolderProvider>
+              <ZoomProvider>
+              {children}
+              </ZoomProvider>
+            </FolderProvider>
+            </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
