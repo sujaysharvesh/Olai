@@ -10,6 +10,7 @@ import { NoteSync } from "./noteSync";
 import { fetchNotes } from "./fetchNotes";
 import { User } from "@/utils/types";
 import { useSession } from "next-auth/react";
+import Profile from "../components/profile";
 
 interface TextBox {
   id: string;
@@ -430,15 +431,11 @@ export default function CombinedCanvas() {
 
   return (
     <div className="flex h-screen flex-col bg-neutral-100 dark:bg-neutral-900">
-      {/* Toolbar */}
-      <div
+      {/* <div
   className="
     flex items-start justify-between
     border-b border-neutral-200/40 dark:border-neutral-700/40
     px-4 py-3
-    backdrop-blur-sm
-    bg-dots
-    absolute bg-dots inset-0
   "
   style={{
     backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
@@ -460,9 +457,7 @@ export default function CombinedCanvas() {
           </div>
         </div>
 
-        {/* Right: Controls & User */}
         <div className="flex items-center gap-4">
-          {/* Zoom Controls */}
           <div className="flex items-center gap-1 rounded-lg border border-neutral-200 dark:border-neutral-700 p-1 bg-white dark:bg-neutral-800">
             <button
               onClick={zoomOut}
@@ -493,12 +488,9 @@ export default function CombinedCanvas() {
             </button>
           </div>
 
-          {/* User & Actions */}
           <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
             <ThemeToggle />
 
-            {/* User Info */}
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
               <div className="text-xs text-neutral-600 dark:text-neutral-400">
@@ -510,14 +502,13 @@ export default function CombinedCanvas() {
               </div>
             </div>
 
-            {/* Sync & Logout */}
             <div className="flex items-center gap-1">
               <NoteSync notes={textBoxes} />
               <Logout />
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Canvas Container */}
       <div className="relative flex-1 overflow-hidden">
@@ -531,6 +522,7 @@ export default function CombinedCanvas() {
             backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
           }}
         />
+        
 
         {/* Interactive Canvas Layer */}
         <div
@@ -544,6 +536,14 @@ export default function CombinedCanvas() {
             isPanning ? "cursor-grabbing" : "cursor-crosshair"
           }`}
         >
+          <div className="mt-10 px-10 justify-between  flex">
+              <div className="items-start">
+              <Logout/>
+              </div>
+              <div className="items-end">
+              <Profile />
+              </div>
+            </div>
           {/* Text Boxes Container */}
           <div
             style={{
@@ -596,8 +596,8 @@ export default function CombinedCanvas() {
                   ></div>
                 )} */}
               </div>
+              
             ))}
-
             {/* Empty state - REMOVED instructions to fix click issue */}
             {textBoxes.length === 0 && (
               <div className="pointer-events-none absolute inset-0 flex items-center mt-40 justify-center">

@@ -17,6 +17,14 @@ body {
   color: var(--foreground);
 }
 
+.font-caslon {
+  font-family: var(--font-libre-caslon-display), serif;
+}
+
+.font-geistMono {
+  font-family: var(--font-geist-mono);
+}
+
 .bg-dots {
   background-color: transparent;
   background-image: radial-gradient(

@@ -98,9 +98,9 @@ interface NoteSyncProps {
       <button
         onClick={handleSync}
         disabled={isSyncing}
-        className="rounded-lg bg-slate-950 text-lime-200 px-4 py-2 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="rounded-lg bg-white text-black px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {isSyncing ? "Syncing..." : "Sync"}
+        {isSyncing ? "Save..." : "Save"}
       </button>
     );
   }

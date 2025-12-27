@@ -13,7 +13,7 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button className="p-2 rounded text-xl invisible">
+      <button className="p-1 rounded text-xl invisible">
         🌙
       </button>
     )
@@ -22,7 +22,7 @@ export default function ThemeToggle() {
   return (
     <button 
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xl"
+      className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xl"
     >
       {theme === 'dark' ? '☀️' : '🌙'}
     </button>
