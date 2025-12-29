@@ -1,12 +1,19 @@
-import { getAllNotes } from "@/db/querie/noteQuerie";
-import { authLib } from "@/utils/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
+import { getAllNotesFolderId } from "@/service/noteService";
 
 
 export async function GET(request: NextRequest): Promise<Response> {
     try {
+
+      const folderId = request.nextUrl.searchParams.get("folderId");
+
+      console.log("Fetching notes for folder ID:", folderId);
+
+      if(!folderId) {
+        return NextResponse.json({ error: "Folder ID is required" }, { status: 400 });
+      }
 
       const session = await getServerSession(authOptions);
 
@@ -21,7 +28,9 @@ export async function GET(request: NextRequest): Promise<Response> {
       //   throw new Error("User not authenticated");
       // }
 
-      const response = await getAllNotes(session.user.id);
+      // const response = await getAllNotes(session.user.id);
+      const response = await getAllNotesFolderId(folderId);
+
   
       return NextResponse.json({ response }, { status: 200 });
       
@@ -29,3 +38,5 @@ export async function GET(request: NextRequest): Promise<Response> {
       return NextResponse.json({ error: `Failed to sync notes : ${err}` }, { status: 500 });
     }
   }
+
+

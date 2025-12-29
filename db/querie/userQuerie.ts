@@ -18,7 +18,7 @@ export async function registerUserQuery(
     return result.rows[0];
 }
 
-export async function registerOauthUser(username: string, email: string, provider: string, providerId: string) {
+export async function oauthUser(username: string, email: string, provider: string, providerId: string) {
 
     const query = `
                 INSERT INTO users (username, email, provider_id, provider)

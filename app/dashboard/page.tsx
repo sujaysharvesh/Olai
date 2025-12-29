@@ -103,25 +103,47 @@ export default function CombinedCanvas() {
   const [isResizing, setIsResizing] = useState(false);
   const router = useRouter();
   const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
+  // const [loading, setLoading] = useState(true);
+  const { currentFolder, loading: foldersLoading } = useFolderContext();
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isResizingRef = useRef(false);
 
+   // Track different loading states
+   const [appState, setAppState] = useState<'loading' | 'ready' | 'error'>('loading');
+   const [error, setError] = useState<string | null>(null);
+  // const currentFolder = useFolderContext().currentFolder;
+  
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
-  }, [status, router]);
+
+    if (status === "loading" || foldersLoading) {
+      setAppState('loading');
+      return;
+    }
+    
+    if (status === "authenticated" && !foldersLoading) {
+      setAppState('ready');
+    }
+
+  }, [status, router, foldersLoading]);
+
+  console.log("Current Folder ID:", currentFolder);
 
   useEffect(() => {
+    if (appState !== 'ready' || !currentFolder?.id) return;
+
     const LoadNotes = async () => {
-      const boxes = await fetchNotes();
+      const boxes = await fetchNotes(currentFolder.id);
       setTextBoxes(boxes);
+      // setLoading(false);
     };
 
     LoadNotes();
-  }, []);
+  }, [appState, currentFolder?.id]);
 
   // Handle canvas click to add new text box
   const handleCanvasClick = (e: React.MouseEvent) => {
@@ -426,6 +448,37 @@ export default function CombinedCanvas() {
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
   }, [editingBox?.title]);
+
+  if (appState === 'loading') {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
+          <p className="mt-4 text-neutral-600 dark:text-neutral-400">
+            Loading workspace...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error UI
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">⚠️</div>
+          <p className="text-red-600 dark:text-red-400">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 rounded-lg bg-amber-500 px-4 py-2 text-white hover:bg-amber-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen flex-col bg-neutral-100 dark:bg-neutral-900">

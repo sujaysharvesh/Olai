@@ -1,8 +1,8 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentailProvider from "next-auth/providers/credentials";
-import { loginUser } from "@/service/userService";
-import { getUserByEmail, registerOauthUser, updateOauthUser} from "@/db/querie/userQuerie";
+import { loginUser, registerOauthUser } from "@/service/userService";
+import { getUserByEmail, updateOauthUser} from "@/db/querie/userQuerie";
 import NextAuth from "next-auth/next";
 
 

@@ -1,11 +1,13 @@
 import { TextBox } from "@/utils/types";
 
 
-export async function fetchNotes(): Promise<TextBox[]> {
+export async function fetchNotes(folderId: string): Promise<TextBox[]> {
 
     try {
-        const response = await fetch('/api/notes/fetch'); 
+        const response = await fetch(`/api/notes/fetch?folderId=${folderId}`, ); 
         const r1 = await response.json();
+
+        console.log("Fetched notes data:", r1);
     
         const data = r1.response;
     

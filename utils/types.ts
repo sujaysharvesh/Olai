@@ -51,6 +51,8 @@ export interface FolderContextType {
   setCurrentFolder : (folder: FolderItem) => void;
   folders: FolderItem[];
   setFolders : (folders: FolderItem[]) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 
 }
 

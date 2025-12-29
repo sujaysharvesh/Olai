@@ -93,7 +93,7 @@ export default function Register() {
         return;
       }
 
-      router.push("/");
+      router.push("/login");
     
     } catch (err) {
       console.error("Registration error:", err);

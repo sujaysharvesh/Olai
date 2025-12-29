@@ -25,15 +25,26 @@ export async function getAllNotes(userId:string) {
 
 }
 
-export async function getAllNotesId(userId: string) {
+export async function NotesByFolderId(folderId: string) {
 
-    const query = `SELECT id FROM notes WHERE user_id = $1 ORDER BY created_at DESC;`;
-
-    const value = [userId];
-    const result = await pool.query(query, value);
+    const querie = `SELECT * FROM notes WHERE folder_id = $1 ORDER BY created_at DESC;`;
+    const values = [folderId];
+    const result = await pool.query(querie, values);
     return result.rows;
 
 }
+
+// export async function getAllNotesId(userId: string) {
+
+//     const query = `SELECT id FROM notes WHERE user_id = $1 ORDER BY created_at DESC;`;
+
+//     const value = [userId];
+//     const result = await pool.query(query, value);
+//     return result.rows;
+
+// }
+
+
 
 export async function updateUserNotes(box: TextBox, userId: string) {
     const query = `
@@ -72,3 +83,4 @@ export async function deleteNote(id: string, userId: string) {
     return result.rows[0];
 
 }
+
