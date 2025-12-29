@@ -118,30 +118,44 @@ export default function CombinedCanvas() {
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
+      return;
     }
-
+  
     if (status === "loading" || foldersLoading) {
       setAppState('loading');
       return;
     }
     
     if (status === "authenticated" && !foldersLoading) {
+      // Check if we have a current folder
+      if (!currentFolder) {
+        setAppState('loading');
+        return;
+      }
       setAppState('ready');
     }
-
-  }, [status, router, foldersLoading]);
+  }, [status, router, foldersLoading, currentFolder]);
 
   console.log("Current Folder ID:", currentFolder);
 
   useEffect(() => {
-    if (appState !== 'ready' || !currentFolder?.id) return;
-
+    if (appState !== 'ready' || !currentFolder?.id) {
+      if (!currentFolder?.id) {
+        setTextBoxes([]);
+      }
+      return;
+    }
+  
     const LoadNotes = async () => {
-      const boxes = await fetchNotes(currentFolder.id);
-      setTextBoxes(boxes);
-      // setLoading(false);
+      try {
+        const boxes = await fetchNotes(currentFolder.id);
+        setTextBoxes(boxes);
+      } catch (err) {
+        console.error("Error loading notes:", err);
+        setError("Failed to load notes");
+      }
     };
-
+  
     LoadNotes();
   }, [appState, currentFolder?.id]);
 
