@@ -602,6 +602,7 @@ export default function CombinedCanvas() {
             </div>
             <div className="items-end">
               <Profile />
+              <NoteSync notes={textBoxes} folderId={currentFolder.id} />
             </div>
           </div>
           <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">

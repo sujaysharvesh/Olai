@@ -17,7 +17,7 @@ export async function getNotes(userId: string) {
 
 }
 
-export async function updateNotes(notes: TextBox[], userId: string) {
+export async function updateNotes(notes: TextBox[], userId: string, folderId: string) {
     const client = await pool.connect(); 
     try {
       console.log("Updating notes for user:", notes);
@@ -30,7 +30,7 @@ export async function updateNotes(notes: TextBox[], userId: string) {
   
       await Promise.all(
         notes.map(note => {
-            updateUserNotes(note, userId);
+            updateUserNotes(note, userId, folderId);
         })
       );
   

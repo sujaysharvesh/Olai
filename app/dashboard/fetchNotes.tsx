@@ -10,6 +10,7 @@ export async function fetchNotes(folderId: string): Promise<TextBox[]> {
         console.log("Fetched notes data:", r1);
     
         const data = r1.response;
+        console.log("Notes data extracted:", data.notes);
     
         const boxes: TextBox[] = data.map((note: any) => ({
           id: note.id,

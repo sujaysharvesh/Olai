@@ -60,9 +60,10 @@ import type { TextBox } from "@/utils/types";
 // }
 interface NoteSyncProps {
     notes: TextBox[];
+    folderId?: string;
   }
   
-  export function NoteSync({ notes }: NoteSyncProps) {
+  export function NoteSync({ notes, folderId }: NoteSyncProps) {
     const [isSyncing, setIsSyncing] = useState(false);
   
     const handleSync = async () => {
@@ -72,9 +73,10 @@ interface NoteSyncProps {
         setIsSyncing(true);
 
         console.log("notes", notes)
+        console.log("folderId", folderId)
 
   
-        const response = await fetch("/api/notes/sync", {
+        const response = await fetch(`/api/notes/sync?folderId=${folderId}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

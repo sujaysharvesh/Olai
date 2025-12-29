@@ -9,6 +9,12 @@ export async function POST(request: NextRequest): Promise<Response> {
 
       const session = await getServerSession(authOptions);
 
+      const folderId = request.nextUrl.searchParams.get("folderId");
+      if(!folderId) {
+        return NextResponse.json({ error: "Folder ID is required" }, { status: 400 });
+      }
+      
+
       if (!session || !session.user?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
@@ -23,7 +29,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   
       const { notes } = await request.json();
   
-      await updateNotes(notes, session.user.id);
+      await updateNotes(notes, session.user.id, folderId);
   
       return NextResponse.json({ message: "Notes synced successfully" }, { status: 200 });
       

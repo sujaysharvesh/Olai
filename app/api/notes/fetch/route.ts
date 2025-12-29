@@ -9,7 +9,6 @@ export async function GET(request: NextRequest): Promise<Response> {
 
       const folderId = request.nextUrl.searchParams.get("folderId");
 
-      console.log("Fetching notes for folder ID:", folderId);
 
       if(!folderId) {
         return NextResponse.json({ error: "Folder ID is required" }, { status: 400 });

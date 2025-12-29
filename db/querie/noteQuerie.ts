@@ -46,10 +46,10 @@ export async function NotesByFolderId(folderId: string) {
 
 
 
-export async function updateUserNotes(box: TextBox, userId: string) {
+export async function updateUserNotes(box: TextBox, userId: string, folderId: string) {
     const query = `
-            INSERT INTO notes (id, user_id, x, y, width, height, text, created_at, updated_at, color, title)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+            INSERT INTO notes (id, user_id, x, y, width, height, text, created_at, updated_at, color, title, folder_id)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, $12)
             ON CONFLICT (id) DO UPDATE SET
               x=EXCLUDED.x,
               y=EXCLUDED.y,
@@ -61,11 +61,10 @@ export async function updateUserNotes(box: TextBox, userId: string) {
               updated_at=NOW()
           `;
     
-    const values = [box.id, userId, box.x, box.y, box.width, box.height, box.text, new Date(), new Date(), box.color, box.title];
+    const values = [box.id, userId, box.x, box.y, box.width, box.height, box.text, new Date(), new Date(), box.color, box.title, folderId];
     
     const result = await pool.query(query, values);
       
-    
   }
 
 export async function DeleteNotes(noteIds: string[], userId: string) {

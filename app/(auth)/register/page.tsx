@@ -72,7 +72,6 @@ export default function Register() {
     }
 
     try {
-      console.log("Submitting registration:", formData);
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {

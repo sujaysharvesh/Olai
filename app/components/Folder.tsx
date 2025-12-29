@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Folder, Plus, Search, X, Trash2 } from "lucide-react";
 import { useFolderContext } from "./FolderContext";
+import { createFolder } from "@/service/folderService";
+import { createFolderAPI } from "../dashboard/createFolder";
 
 interface FolderItem {
   id: string;
@@ -73,7 +75,6 @@ export default function FolderDropdown() {
 
   // Handle delete folder
   const handleDeleteFolder = (folderId: string) => {
-    // Don't delete if it's the last folder
     if (folders.length === 1) {
       setDeleteConfirm(null);
       return;
@@ -92,6 +93,7 @@ export default function FolderDropdown() {
   // Handle create new folder
   const handleCreateFolder = () => {
     if (newFolderName.trim()) {
+      const response = createFolderAPI(newFolderName);
       const newFolder: FolderItem = {
         id: Date.now().toString(),
         name: newFolderName,
