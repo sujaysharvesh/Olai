@@ -9,7 +9,6 @@ export async function POST(request: NextRequest): Promise<Response> {
         // console.log(username, email, password)
 
         const user = await registerUser(username, email, password);
-        console.log(user);
 
         return NextResponse.json(
             {

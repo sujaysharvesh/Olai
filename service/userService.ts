@@ -23,7 +23,7 @@ export async function registerUser(
   if (!email.includes("@")) {
     throw new Error("Invalid email format");
   }
-  console.log(username, email, password)
+  // console.log(username, email, password)
 
   const existingUser = await getUserByEmail(email);
   if (existingUser) {
@@ -40,7 +40,7 @@ export async function registerUser(
 
   const createDefault = await FolderService.createDefaultFolder(response.id);
 
-  console.log("Create default folder response:", createDefault);
+  // console.log("Create default folder response:", createDefault);
 
   if (!createDefault) {
     throw new Error("Failed to create default folder for user");
@@ -86,7 +86,7 @@ export async function loginUser(
     throw new Error("User not found");
   }
 
-  console.log("User found:", user);
+  // console.log("User found:", user);
 
   const isPasswordValid = await comparePasswordFunc(password, user.password);
   if (!isPasswordValid) {
@@ -109,7 +109,7 @@ export async function loginUser(
       email: user.email,
     },
   };
-  console.log("Login response:", response);
+  // console.log("Login response:", response);
 
   return response;
 }

@@ -85,7 +85,6 @@ export default function Register() {
       });
 
       const data = await response.json();
-      console.log(data)
 
       if (!response.ok) {
         setError(data.error || "Registration failed");
@@ -104,7 +103,7 @@ export default function Register() {
 
   const handleGoogleSignIn = () => {
     signIn("google", {
-      callbackUrl: "/",
+      callbackUrl: "/login",
     });
   };
 
