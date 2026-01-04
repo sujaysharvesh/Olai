@@ -614,6 +614,7 @@ export default function CombinedCanvas() {
             style={{
               transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`,
               transformOrigin: "0 0",
+              transition: draggingId || isPanning || resizingId ? "none" : "transform 0.2s ease-out",
             }}
           >
             {textBoxes.map((box) => (
