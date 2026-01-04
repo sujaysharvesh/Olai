@@ -6,7 +6,7 @@ import {
 import bcrypt from "bcrypt";
 import type { JwtPayLoad, LoginResponse } from "../utils/types";
 import { authLib } from "@/utils/auth";
-import { createDefaultFolder } from "./folderService";
+import { FolderService } from "./folderService";
 
 const salt = process.env.SALT;
 const pepper = process.env.PEPPER;
@@ -23,6 +23,7 @@ export async function registerUser(
   if (!email.includes("@")) {
     throw new Error("Invalid email format");
   }
+  console.log(username, email, password)
 
   const existingUser = await getUserByEmail(email);
   if (existingUser) {
@@ -37,7 +38,7 @@ export async function registerUser(
     throw new Error("User registration failed");
   }
 
-  const createDefault = createDefaultFolder(response.id);
+  const createDefault = await FolderService.createDefaultFolder(response.id);
 
   console.log("Create default folder response:", createDefault);
 
@@ -68,7 +69,7 @@ export async function registerOauthUser(
     throw new Error("OAuth User registration failed");
   }
 
-  const createDefault = createDefaultFolder(response.id);
+  const createDefault = FolderService.createDefaultFolder(response.id);
   if (!createDefault) {
     throw new Error("Failed to create default folder for OAuth user");
   }

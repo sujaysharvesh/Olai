@@ -59,6 +59,7 @@ export async function DELETE(request: NextRequest): Promise<Response> {
         }
 
         const folderId = request.nextUrl.searchParams.get("folderId");
+        // console.log("Deleting folder with ID:", folderId);
         const response = FolderService.deleteFolderById(folderId!);
         
 

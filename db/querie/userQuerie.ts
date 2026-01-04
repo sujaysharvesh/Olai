@@ -44,10 +44,12 @@ export async function updateOauthUser(email: string, username: string,  provider
 }
 
 export async function getUserByEmail(email: string) {
+    console.log("email" + email)
     const result = await pool.query(
         `SELECT id, email, username, password FROM users WHERE email = $1`,
         [email]
     );
+    console.log("result" + result)
 
     return result.rows[0];
 }

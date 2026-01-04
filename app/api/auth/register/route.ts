@@ -6,8 +6,10 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest): Promise<Response> {
     try {
         const { username, email, password } = await request.json();
+        // console.log(username, email, password)
 
         const user = await registerUser(username, email, password);
+        console.log(user);
 
         return NextResponse.json(
             {
@@ -18,9 +20,11 @@ export async function POST(request: NextRequest): Promise<Response> {
         );
 
     } catch (err: any) {
+        console.error("REGISTER ERROR:", err);
         return NextResponse.json(
-            { error: err.message || "Registration failed" },
-            { status: 400 }
+          { error: "Internal server error" + err.message },
+          { status: 500 }
         );
-    }
+      }
+      
 }

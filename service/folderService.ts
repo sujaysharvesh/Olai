@@ -42,6 +42,12 @@ import {
       }
   
       return response.rows[0];
+    },
+
+    async createDefaultFolder(userId: string) {
+
+        const defaultFolderName = "Home";
+        return await createFolderForUser(defaultFolderName, userId);
+    
     }
   };
-  

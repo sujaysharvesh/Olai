@@ -23,3 +23,20 @@ export async function createFolderAPI(name:string) {
     }
 
 }
+
+export async function DeleteFolderApi(folderId:String) {
+    try {
+        const response = await fetch(`/api/folders?folderId=${folderId}`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to delete folder");
+        }
+
+        return true;
+    } catch (err) {
+        throw new Error(`Error deleting folder: ${err}`);
+    }
+    
+}

@@ -1,4 +1,3 @@
-import { registerUser } from "@/service/userService";
 import pool from "../postgres";
 
 

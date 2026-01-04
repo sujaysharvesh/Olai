@@ -1,19 +1,30 @@
-
 import { Pool } from "pg";
 
-const globalForPg = global as unknown as { pool: Pool | undefined; }
+declare global {
+  var pgPool: Pool | undefined;
+}
 
-
-const pool = globalForPg.pool ?? new Pool({
+const pool =
+  global.pgPool ??
+  new Pool({
     connectionString: process.env.DATABASE_URL,
+
     ssl: process.env.NODE_ENV === 'production' ? {
       rejectUnauthorized: false
     } : false,
-    max: 20, 
-    idleTimeoutMillis: 30000, 
-    connectionTimeoutMillis: 2000, 
+    max: 5,
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 10000,
   });
 
-if(process.env.NODE_ENV !== "production") globalForPg.pool = pool;
+global.pgPool = pool;
+
+// pool.on("connect", () => {
+//   console.log("🟢 PostgreSQL connected");
+// });
+
+// pool.on("error", (err) => {
+//   console.error("🔴 PostgreSQL pool error", err);
+// });
 
 export default pool;

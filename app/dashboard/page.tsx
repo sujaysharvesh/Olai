@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import TextBox from "../components/TextBoxProp";
 import { useRouter } from "next/navigation";
 import { NoteSync } from "./noteSync";
@@ -10,9 +9,9 @@ import { useSession } from "next-auth/react";
 import FolderDropdown from "../components/Folder";
 import Profile from "../components/profile";
 import { useFolderContext } from "../components/FolderContext";
-import { registerUser } from "@/service/userService";
 import { useZoomContext } from "../components/zoomContext";
 import ZoomControls from "../components/zoomController";
+import { v4 as uuidv4 } from "uuid";
 
 interface TextBox {
   id: string;
@@ -167,7 +166,7 @@ export default function CombinedCanvas() {
     const x = (e.clientX - rect.left - panOffset.x) / zoom;
     const y = (e.clientY - rect.top - panOffset.y) / zoom;
     const newBox: TextBox = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       title: "",
       color: "Amber",
       x,
@@ -600,7 +599,7 @@ export default function CombinedCanvas() {
             <div className="items-start">
               <FolderDropdown />
             </div>
-            <div className="items-end">
+            <div className="justify-between flex items-center gap-3">
               <Profile />
               <NoteSync notes={textBoxes} folderId={currentFolder.id} />
             </div>

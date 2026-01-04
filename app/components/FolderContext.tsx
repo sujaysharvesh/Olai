@@ -46,7 +46,7 @@ export function FolderProvider({ children }: { children: ReactNode }) {
           }
 
           const data = await res.json();
-          console.log("Fetched folders:", data.folders);
+          // console.log("Fetched folders:", data.folders);
 
           const folders: FolderItem[] = data.folders.map((folder: any) => ({
             id: folder.id,
