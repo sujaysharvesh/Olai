@@ -95,7 +95,7 @@ export default function Register() {
       router.push("/login");
     
     } catch (err) {
-      console.error("Registration error:", err);
+      // console.error("Registration error:", err);
       setError("Something went wrong. Please try again.");
       setIsLoading(false);
     }
@@ -137,7 +137,8 @@ export default function Register() {
                 Create your account
               </h1>
               <p className="text-[#37322f]/70 text-sm font-medium">
-                Join Brillance and streamline your billing
+              Join Olai and give your ideas space to grow.
+
               </p>
             </div>
 

@@ -85,12 +85,12 @@ interface NoteSyncProps {
         });
 
         if (response.ok) {
-          console.log("Notes synced successfully");
+          // console.log("Notes synced successfully");
         } else {
-          console.error("Failed to sync notes");
+          // console.error("Failed to sync notes");
         }
       } catch (error) {
-        console.error("Sync error:", error);
+        // console.error("Sync error:", error);
       } finally {
         setIsSyncing(false);
       }

@@ -49,7 +49,7 @@ export async function getUserByEmail(email: string) {
         `SELECT id, email, username, password FROM users WHERE email = $1`,
         [email]
     );
-    console.log("result" + result)
+    // console.log("result" + result)
 
     return result.rows[0];
 }

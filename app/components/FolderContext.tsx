@@ -37,7 +37,7 @@ export function FolderProvider({ children }: { children: ReactNode }) {
 
           if (!res.ok) {
             if (res.status === 401) {
-              console.log("Unauthorized - user may have logged out");
+              // console.log("Unauthorized - user may have logged out");
               setFolders([]);
               setCurrentFolder(null);
               return;
@@ -62,7 +62,7 @@ export function FolderProvider({ children }: { children: ReactNode }) {
           console.log("Current folder after fetch:", currentFolder);
 
         } catch (err) {
-          console.error("Error fetching folders:", err);
+          // console.error("Error fetching folders:", err);
           setFolders([]);
           setCurrentFolder(null);
         } finally {
