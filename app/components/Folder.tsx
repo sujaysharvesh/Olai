@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Folder, Plus, X, Trash2 } from "lucide-react";
 import { useFolderContext } from "./FolderContext";
-import { DeleteFolderApi, createFolderAPI } from "../../app/dashboard/createFolder";
+import { DeleteFolderApi, createFolderAPI } from "../dashboard1/createFolder";
 
 interface FolderItem {
   id: string;
