@@ -10,7 +10,7 @@ import FolderDropdown from "../components/Folder";
 import Profile from "../components/profile";
 import { useFolderContext } from "../components/FolderContext";
 import { useZoomContext } from "../components/zoomContext";
-import ZoomControls from "../components/zoomController";
+import ZoomControls from "./zoomController";
 import { v4 as uuidv4 } from "uuid";
 
 interface TextBox {

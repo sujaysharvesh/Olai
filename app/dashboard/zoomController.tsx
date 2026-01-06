@@ -1,7 +1,7 @@
 "use client";
 
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
-import { useZoomContext } from "./zoomContext";
+import { useZoomContext } from "../components/zoomContext";
 
 export default function ZoomControls() {
   const { zoom, zoomIn, zoomOut, resetZoom } = useZoomContext();
