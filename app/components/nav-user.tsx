@@ -29,6 +29,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/app/components/ui/sidebar"
+import Logout from "./LogoutButton"
 
 export function NavUser({
   user,
@@ -103,8 +104,13 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <LogOut />
-              Log out
+            <Logout
+              className="w-full flex items-center gap-2
+                         px-1 py-1 rounded-md text-sm font-medium
+                         text-red-600 dark:text-red-400
+                        dark:hover:bg-red-950/20
+                         transition"
+            />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

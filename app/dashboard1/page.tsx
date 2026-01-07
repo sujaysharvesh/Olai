@@ -114,6 +114,8 @@ export default function Canvas() {
    const [error, setError] = useState<string | null>(null);
   // const currentFolder = useFolderContext().currentFolder;
   
+  // console.log("session" + session?.user.)
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -494,7 +496,7 @@ export default function Canvas() {
   }
 
   return (
-    <div className="flex h-[870px] flex-col bg-neutral-100 dark:bg-neutral-900">
+    <div className="flex h-[870px] rounded-lg flex-col bg-neutral-100 dark:bg-neutral-900">
       {/* <div
         className="
     flex items-start justify-between
@@ -600,8 +602,8 @@ export default function Canvas() {
               <FolderDropdown />
             </div>
             <div className="justify-between flex items-center gap-3">
-              {/* <Profile />
-              <NoteSync notes={textBoxes} folderId={currentFolder.id} /> */}
+              <Profile />
+              <NoteSync notes={textBoxes} folderId={currentFolder.id} /> 
             </div>
           </div>
           <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">

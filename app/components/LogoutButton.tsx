@@ -18,7 +18,7 @@ export default function Logout({ className }: LogoutProps) {
       title="Logout"
     >
       <LogOut className="w-4 h-4" />
-      <span>Logout</span>
+      <span>Log out</span>
     </button>
   );
 }
