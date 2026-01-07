@@ -30,7 +30,7 @@ export function FolderProvider({ children }: { children: ReactNode }) {
       async function fetchFolder() {
         try {
           setLoading(true);
-          const res = await fetch('/api/folders', {
+          const res = await fetch('/api/folders/all', {
             method: "GET",
             credentials: "include",
           })

@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import { ChevronRight, Folder, Forward, Trash2, type LucideIcon } from "lucide-react"
 
 import {
   Collapsible,
@@ -18,11 +18,18 @@ import {
   SidebarMenuSubItem,
 } from "@/app/components/ui/sidebar"
 
+import {
+  useSidebar,
+} from "@/app/components/ui/sidebar"
+import { useFolderContext } from "./FolderContext"
+import { Item } from "@radix-ui/react-dropdown-menu"
+
 export function NavMain({
   items,
 }: {
   items: {
     title: string
+    id: string
     url: string
     icon?: LucideIcon
     isActive?: boolean
@@ -32,9 +39,14 @@ export function NavMain({
     }[]
   }[]
 }) {
+  // console.log("items" + items)
+  const { isMobile } = useSidebar()
+
+  const { setCurrentFolder } = useFolderContext();
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>Folders</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible
@@ -45,7 +57,15 @@ export function NavMain({
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
+              <SidebarMenuButton
+                  tooltip={item.title}
+                  onClick={() =>
+                    setCurrentFolder({
+                      id: item.id,
+                      name: item.title,
+                    })
+                  }
+                >
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
                   <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />

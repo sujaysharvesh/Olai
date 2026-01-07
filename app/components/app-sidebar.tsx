@@ -26,10 +26,38 @@ import {
   SidebarRail,
 } from "@/app/components/ui/sidebar";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { Folder } from "lucide-react";
+
 
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [navMain, setNavMain] = useState<any[]>([]);
+   useEffect(() => {
 
+    const fetchFolders = async () => {
+      const res = await fetch("/api/folders");
+      const data = await res.json();
+      // console.log(data)
+  
+      const mapped = data.map((folder: any) => ({
+        title: folder.title,   
+        id: folder.id,  
+        icon: Folder,
+        isActive: false,
+        items: folder.items,     // 📝 note titles
+      }));
+
+      // console.log(mapped)
+  
+      setNavMain(mapped);
+    };
+  
+    fetchFolders();
+  }, []);
+
+  console.log(navMain)
+  
   const { data: session } = useSession();
   // console.log(session);
 
@@ -166,10 +194,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
+        {/* <div>home</div> */}
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>

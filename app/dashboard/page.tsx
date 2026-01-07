@@ -1,3 +1,5 @@
+"use client"
+
 import { AppSidebar } from "@/app/components/app-sidebar"
 import {
   Breadcrumb,
@@ -14,8 +16,17 @@ import {
   SidebarTrigger,
 } from "@/app/components/ui/sidebar"
 import Canvas from "../dashboard1/page"
+import { useFolderContext } from "../components/FolderContext"
 
 export default function Page() {
+  const {
+    isOpen,
+    setIsOpen,
+    currentFolder,
+    setCurrentFolder,
+    folders,
+    setFolders,
+  } = useFolderContext();
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -26,14 +37,14 @@ export default function Page() {
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
+                {/* <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink href="#">
                     Building Your Application
                   </BreadcrumbLink>
-                </BreadcrumbItem>
+                </BreadcrumbItem> */}
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                  <BreadcrumbPage>{currentFolder?.name}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
