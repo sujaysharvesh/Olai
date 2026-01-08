@@ -43,6 +43,16 @@ export interface FolderItem {
   name: string;
 }
 
+export interface NoteItem {
+  name: string,
+  x: number,
+  y: number
+}
+
+export interface NoteContextType {
+  setNote: (notes : NoteItem) => void;
+}
+
 export interface FolderContextType {
   
   isOpen: boolean;

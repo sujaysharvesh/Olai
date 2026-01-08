@@ -602,8 +602,8 @@ export default function Canvas() {
               <FolderDropdown />
             </div>
             <div className="justify-between flex items-center gap-3">
-              <Profile />
-              <NoteSync notes={textBoxes} folderId={currentFolder.id} /> 
+              {/* <Profile />
+              <NoteSync notes={textBoxes} folderId={currentFolder.id} />  */}
             </div>
           </div>
           <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
