@@ -74,6 +74,7 @@ export interface ZoomContextType {
   zoomIn: () => void;
   zoomOut: () => void;
   resetZoom: () => void;
+  focusOnNote: (offset: {x: number, y: number}) => void;
   ZOOM_STEP: number;
   MAX_ZOOM: number;
   MIN_ZOOM: number;

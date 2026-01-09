@@ -12,6 +12,7 @@ const ZoomContext = createContext<ZoomContextType | undefined>(undefined);
 export function ZoomProvider({ children }: { children: ReactNode }) {
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  // const [note, set]
 
   const zoomIn = () => {
     setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
@@ -26,6 +27,12 @@ export function ZoomProvider({ children }: { children: ReactNode }) {
     setPanOffset({ x: 0, y: 0 });
   };
 
+  const focusOnNote = (offset: { x: number; y: number }) => {
+    setZoom(1);
+    setPanOffset(offset);
+  };
+  
+
   return (
     <ZoomContext.Provider
       value={{
@@ -36,6 +43,7 @@ export function ZoomProvider({ children }: { children: ReactNode }) {
         zoomIn,
         zoomOut,
         resetZoom,
+        focusOnNote,
         MAX_ZOOM,
         MIN_ZOOM,
         ZOOM_STEP,

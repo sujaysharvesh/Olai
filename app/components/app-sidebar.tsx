@@ -45,10 +45,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         id: folder.id,  
         icon: Folder,
         isActive: false,
-        items: folder.items,     // 📝 note titles
+        items: folder.items,     
       }));
 
-      // console.log(mapped)
+      console.log(mapped)
   
       setNavMain(mapped);
     };
@@ -61,7 +61,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   // console.log(session);
 
-  // This is sample data.
   const data = {
     user: {
       name: session?.user.name,

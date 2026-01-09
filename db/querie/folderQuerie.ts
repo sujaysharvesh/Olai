@@ -29,9 +29,31 @@ export async function updateFolderName(folderId: string, name:string) {
 
 }
 
-export async function FoldersByUserId(userId: string) {
-    const querie = `SELECT * FROM folders WHERE user_id = $1 ORDER BY created_at DESC;`;
+// export async function FoldersByUserId(userId: string) {
+//     const querie = `SELECT * FROM folders WHERE user_id = $1 ORDER BY created_at DESC;`;
+//     const values = [userId];
+//     const result = await pool.query(querie, values);
+//     return result.rows;
+// }
+
+export async function FoldersByUserId(userId:string) {
+
+    const query = `
+      SELECT
+        f.id   AS folder_id,
+        f.name AS folder_name,
+        n.id   AS note_id,
+        n.title AS note_title,
+        n.x,
+        n.y
+      FROM folders f
+      LEFT JOIN notes n ON n.folder_id = f.id
+      WHERE f.user_id = $1
+      ORDER BY f.created_at, n.created_at
+    `;
+
     const values = [userId];
-    const result = await pool.query(querie, values);
-    return result.rows;
+    const rows  = await pool.query(query, values);
+    return rows;
+    
 }

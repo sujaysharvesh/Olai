@@ -29,6 +29,7 @@ import {
 import { useFolderContext } from "./FolderContext";
 import { useEffect, useRef, useState } from "react";
 import { createFolderAPI, DeleteFolderApi } from "../dashboard1/createFolder";
+import { useZoomContext } from "./zoomContext";
 
 export function NavMain({
   items,
@@ -42,11 +43,14 @@ export function NavMain({
     items?: {
       title: string;
       url: string;
+      x: number;
+      y: number;
     }[];
   }[];
 }) {
   const { isMobile } = useSidebar();
-  const { setCurrentFolder } = useFolderContext();
+  const { currentFolder, setCurrentFolder } = useFolderContext();
+  const { focusOnNote } = useZoomContext();
 
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -95,7 +99,16 @@ export function NavMain({
     }
   };
 
-  // Close input when clicking outside
+  useEffect(() => {
+    if (!currentFolder && items.length > 0) {
+      setCurrentFolder({
+        id: items[0].id,
+        name: items[0].title,
+      });
+    }
+  }, [items, currentFolder]);
+  
+
   useEffect(() => {
     if (!isCreatingFolder) return;
 
@@ -178,7 +191,9 @@ export function NavMain({
                     tooltip={item.title}
                     onClick={(e) => {
                       if (
-                        !(e.target as HTMLElement).closest(".chevron-trigger") &&
+                        !(e.target as HTMLElement).closest(
+                          ".chevron-trigger"
+                        ) &&
                         !(e.target as HTMLElement).closest(".delete-trigger")
                       ) {
                         setCurrentFolder({
@@ -190,24 +205,26 @@ export function NavMain({
                     className="group/folder"
                   >
                     {item.icon && <item.icon />}
-                    <span>{item.title}</span>
+                    <span className="truncate min-w-0 flex-1">
+                      {item.title}
+                    </span>
 
                     <div className="ml-auto flex items-center gap-1">
-  {items.length > 1 && (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        setDeletingFolderId(item.id);
-      }}
-      className="delete-trigger opacity-0 group-hover/folder:opacity-100 p-1 hover:bg-accent rounded-sm transition-all flex items-center justify-center"
-      title="Delete folder"
-    >
-      <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-    </button>
-  )}
+                      {items.length > 1 && (
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingFolderId(item.id);
+                          }}
+                          className="delete-trigger opacity-0 group-hover/folder:opacity-100 p-1 hover:bg-accent rounded-sm transition-all flex items-center justify-center"
+                          title="Delete folder"
+                        >
+                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                        </div>
+                      )}
 
-<ChevronRight
-  className="
+                      <ChevronRight
+                        className="
     chevron-trigger
     h-5 w-5
     text-muted-foreground
@@ -215,17 +232,16 @@ export function NavMain({
     transition-transform duration-200
     group-data-[state=open]/collapsible:rotate-90
   "
-/>
-
-</div>
-
+                      />
+                    </div>
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
 
                 <CollapsibleContent>
                   <SidebarMenuSub>
                     {item.items?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
+                      <SidebarMenuSubItem key={subItem.title}
+                      >
                         <SidebarMenuSubButton>
                           <span>{subItem.title}</span>
                         </SidebarMenuSubButton>
@@ -243,11 +259,10 @@ export function NavMain({
       {deletingFolderId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
           <div className="bg-background rounded-lg p-6 max-w-sm mx-4 border shadow-lg">
-            <h3 className="text-lg font-semibold mb-2">
-              Delete Folder?
-            </h3>
+            <h3 className="text-lg font-semibold mb-2">Delete Folder?</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Are you sure you want to delete this folder? This action cannot be undone.
+              Are you sure you want to delete this folder? This action cannot be
+              undone.
             </p>
             <div className="flex gap-3 justify-end">
               <button

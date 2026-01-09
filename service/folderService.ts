@@ -14,13 +14,13 @@ import {
       return await createFolderForUser(name.trim(), userId);
     },
   
-    async getAllFolders(userId: string) {
-      if (!userId) {
-        throw new Error("User ID is required");
-      }
+    // async getAllFolders(userId: string) {
+    //   if (!userId) {
+    //     throw new Error("User ID is required");
+    //   }
   
-      return await FoldersByUserId(userId);
-    },
+    //   return await FoldersByUserId(userId);
+    // },
   
     async deleteFolderById(folderId: string) {
       if (!folderId) {
@@ -49,5 +49,13 @@ import {
         const defaultFolderName = "Home";
         return await createFolderForUser(defaultFolderName, userId);
     
-    }
+    },
+
+    async getAllFolders(userId: string) {
+      if (!userId) {
+        throw new Error("User ID is required");
+      }
+  
+      return await FoldersByUserId(userId);
+    },
   };
