@@ -29,35 +29,32 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Folder } from "lucide-react";
 
-
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [navMain, setNavMain] = useState<any[]>([]);
-   useEffect(() => {
-
+  useEffect(() => {
     const fetchFolders = async () => {
       const res = await fetch("/api/folders");
       const data = await res.json();
       // console.log(data)
-  
+
       const mapped = data.map((folder: any) => ({
-        title: folder.title,   
-        id: folder.id,  
+        title: folder.title,
+        id: folder.id,
         icon: Folder,
         isActive: false,
-        items: folder.items,     
+        items: folder.items,
       }));
 
-      console.log(mapped)
-  
+      console.log(mapped);
+
       setNavMain(mapped);
     };
-  
+
     fetchFolders();
   }, []);
 
-  console.log(navMain)
-  
+  console.log(navMain);
+
   const { data: session } = useSession();
   // console.log(session);
 
@@ -69,20 +66,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     teams: [
       {
-        name: "Acme Inc",
+        name: "Olai",
         logo: GalleryVerticalEnd,
-        plan: "Enterprise",
+        plan: "You views",
       },
-      {
-        name: "Acme Corp.",
-        logo: AudioWaveform,
-        plan: "Startup",
-      },
-      {
-        name: "Evil Corp.",
-        logo: Command,
-        plan: "Free",
-      },
+      // {
+      //   name: "Acme Corp.",
+      //   logo: AudioWaveform,
+      //   plan: "Startup",
+      // },
+      // {
+      //   name: "Evil Corp.",
+      //   logo: Command,
+      //   plan: "Free",
+      // },
     ],
     projects: [
       {
@@ -111,10 +108,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={{
+            name: data.user.name ?? "User",
+            email: data.user.email ?? "",
+            avatar: data.user.avatar,
+          }}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
