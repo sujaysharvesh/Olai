@@ -43,6 +43,16 @@ export interface FolderItem {
   name: string;
 }
 
+export interface NoteItem {
+  name: string,
+  x: number,
+  y: number
+}
+
+export interface NoteContextType {
+  setNote: (notes : NoteItem) => void;
+}
+
 export interface FolderContextType {
   
   isOpen: boolean;
@@ -64,6 +74,7 @@ export interface ZoomContextType {
   zoomIn: () => void;
   zoomOut: () => void;
   resetZoom: () => void;
+  focusOnNote: (offset: {x: number, y: number}) => void;
   ZOOM_STEP: number;
   MAX_ZOOM: number;
   MIN_ZOOM: number;
