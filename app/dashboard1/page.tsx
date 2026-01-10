@@ -12,6 +12,7 @@ import { useFolderContext } from "../components/FolderContext";
 import { useZoomContext } from "../components/zoomContext";
 import ZoomControls from "./zoomController";
 import { v4 as uuidv4 } from "uuid";
+import ThemeToggle from "../components/ThemeToggle";
 
 interface TextBox {
   id: string;
@@ -496,7 +497,7 @@ export default function Canvas() {
   }
 
   return (
-    <div className="flex h-[870px] rounded-lg flex-col bg-neutral-100 dark:bg-neutral-900">
+    <div className="flex h-[880px] rounded-lg flex-col bg-neutral-100 dark:bg-neutral-900">
       {/* <div
         className="
     flex items-start justify-between
@@ -599,7 +600,6 @@ export default function Canvas() {
         >
           <div className="mt-10 px-10 justify-between  flex">
             <div className="items-start">
-              <FolderDropdown />
             </div>
             <div className="justify-between flex items-center gap-3">
               {/* <Profile />
@@ -691,7 +691,7 @@ export default function Canvas() {
 
       {/* Status bar - SIMPLIFIED */}
       <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-1 text-xs text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
-        <div>
+        {/* <div>
           {selectedId
             ? `Selected box at (${textBoxes
                 .find((b) => b.id === selectedId)
@@ -699,10 +699,10 @@ export default function Canvas() {
                 .find((b) => b.id === selectedId)
                 ?.y.toFixed(0)})`
             : "No selection"}
-        </div>
-        <div className="flex items-center gap-4">
+        </div> */}
+        <div className="flex items-center gap-4 text-sm">
           <span>Boxes: {textBoxes.length}</span>
-          <span>Zoom: {Math.round(zoom * 100)}%</span>
+          {/* <span>Zoom: {Math.round(zoom * 100)}%</span> */}
         </div>
       </div>
 
@@ -718,7 +718,7 @@ export default function Canvas() {
           >
             <button
               onClick={closePopover}
-              className="absolute right-3 top-3 bg-slate-100 flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-neutral-200"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 transition-colors  hover:text-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-neutral-200"
             >
               ✕
             </button>

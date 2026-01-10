@@ -45,7 +45,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         items: folder.items,
       }));
 
-      console.log(mapped);
+      // console.log(mapped);
 
       setNavMain(mapped);
     };

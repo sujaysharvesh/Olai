@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   BadgeCheck,
@@ -7,13 +7,13 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/app/components/ui/avatar"
+} from "@/app/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,25 +22,26 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/app/components/ui/dropdown-menu"
+} from "@/app/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/app/components/ui/sidebar"
-import Logout from "./LogoutButton"
+} from "@/app/components/ui/sidebar";
+import Logout from "./LogoutButton";
+import ThemeToggle from "./ThemeToggle";
 
 export function NavUser({
   user,
 }: {
   user: {
-    name?: string
-    email?: string
-    avatar?: string
-  }
+    name?: string;
+    email?: string;
+    avatar?: string;
+  };
 }) {
-  const { isMobile } = useSidebar()
+  const { isMobile } = useSidebar();
 
   return (
     <SidebarMenu>
@@ -102,19 +103,27 @@ export function NavUser({
                 Notifications
               </DropdownMenuItem> */}
             </DropdownMenuGroup>
+            <DropdownMenuItem
+              onSelect={(e) => e.preventDefault()}
+              className="cursor-default"
+
+            >
+              <ThemeToggle />
+            </DropdownMenuItem>
+
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-            <Logout
-              className="w-full flex items-center gap-2
+              <Logout
+                className="w-full flex items-center gap-2
                          px-1 py-1 rounded-md text-sm font-medium
                          text-red-600 dark:text-red-400
                         dark:hover:bg-red-950/20
                          transition"
-            />
+              />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

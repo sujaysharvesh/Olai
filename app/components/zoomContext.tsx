@@ -3,9 +3,9 @@
 import { ZoomContextType } from "@/utils/types";
 import { ReactNode, createContext, useContext, useState } from "react";
 
-const MIN_ZOOM = 0.25;
+const MIN_ZOOM = 0.10;
 const MAX_ZOOM = 3;
-const ZOOM_STEP = 0.25;
+const ZOOM_STEP = 0.10;
 
 const ZoomContext = createContext<ZoomContextType | undefined>(undefined);
 
