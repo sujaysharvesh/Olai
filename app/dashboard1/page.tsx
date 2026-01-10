@@ -12,7 +12,6 @@ import { useFolderContext } from "../components/FolderContext";
 import { useZoomContext } from "../components/zoomContext";
 import ZoomControls from "./zoomController";
 import { v4 as uuidv4 } from "uuid";
-import ThemeToggle from "../components/ThemeToggle";
 
 interface TextBox {
   id: string;
@@ -465,18 +464,18 @@ export default function Canvas() {
     el.style.height = el.scrollHeight + "px";
   }, [editingBox?.title]);
 
-  if (appState === 'loading') {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-          <p className="mt-4 text-neutral-600 dark:text-neutral-400">
-            Loading workspace...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // if (appState === 'loading') {
+  //   return (
+  //     <div className="flex h-screen items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
+  //         <p className="mt-4 text-neutral-600 dark:text-neutral-400">
+  //           Loading workspace...
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Error UI
   if (error) {
@@ -497,7 +496,7 @@ export default function Canvas() {
   }
 
   return (
-    <div className="flex h-[880px] rounded-lg flex-col bg-neutral-100 dark:bg-neutral-900">
+    <div className="flex h-[870px] rounded-lg flex-col bg-neutral-100 dark:bg-neutral-900">
       {/* <div
         className="
     flex items-start justify-between
@@ -600,6 +599,8 @@ export default function Canvas() {
         >
           <div className="mt-10 px-10 justify-between  flex">
             <div className="items-start">
+              <FolderDropdown />
+              <Profile/>
             </div>
             <div className="justify-between flex items-center gap-3">
               {/* <Profile />
@@ -700,7 +701,7 @@ export default function Canvas() {
                 ?.y.toFixed(0)})`
             : "No selection"}
         </div> */}
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-4">
           <span>Boxes: {textBoxes.length}</span>
           {/* <span>Zoom: {Math.round(zoom * 100)}%</span> */}
         </div>
