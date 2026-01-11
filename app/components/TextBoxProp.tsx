@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useEffect, useState } from "react";
+import { BOX_COLORS } from "../dashboard1/boxColors";
+import { useTheme } from "next-themes";
 
 interface TextBoxProps {
   id: string;
@@ -20,51 +22,6 @@ interface TextBoxProps {
   onResize?: (id: string, width: number, height: number) => void;
   onBlur?: (id: string) => void;
 }
-
-const BOX_COLORS = [
-  {
-    name: "Amber",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    text: "text-amber-900",
-    dark: "dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100",
-  },
-  {
-    name: "Red",
-    bg: "bg-red-50",
-    border: "border-red-200",
-    text: "text-red-900",
-    dark: "dark:bg-red-950 dark:border-red-800 dark:text-red-100",
-  },
-  {
-    name: "Blue",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    text: "text-blue-900",
-    dark: "dark:bg-blue-950 dark:border-blue-800 dark:text-blue-100",
-  },
-  {
-    name: "Green",
-    bg: "bg-green-50",
-    border: "border-green-200",
-    text: "text-green-900",
-    dark: "dark:bg-green-950 dark:border-green-800 dark:text-green-100",
-  },
-  {
-    name: "Purple",
-    bg: "bg-purple-50",
-    border: "border-purple-200",
-    text: "text-purple-900",
-    dark: "dark:bg-purple-950 dark:border-purple-800 dark:text-purple-100",
-  },
-  {
-    name: "Pink",
-    bg: "bg-pink-50",
-    border: "border-pink-200",
-    text: "text-pink-900",
-    dark: "dark:bg-pink-950 dark:border-pink-800 dark:text-pink-100",
-  },
-];
 
 export default function TextBox({
   id,
@@ -89,6 +46,8 @@ export default function TextBox({
   const [boxHeight, setBoxHeight] = useState(height);
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartRef = useRef({ width: 0, height: 0, x: 0, y: 0 });
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const MAX_WIDTH = 500;
   const MAX_HEIGHT = 400;
@@ -112,9 +71,19 @@ export default function TextBox({
     target.style.overflow = newHeight >= MAX_HEIGHT ? "hidden" : "hidden";
   }, []);
 
-  const getBoxColorClasses = (color: string) => {
-    const colorObj = BOX_COLORS.find((c) => c.name === color);
-    return colorObj || BOX_COLORS[0];
+  // FIXED: Get color object based on color name
+  const getBoxColorClasses = (colorName: string) => {
+    // Check if BOX_COLORS has this color, fallback to Amber
+    const colorKey = colorName as keyof typeof BOX_COLORS;
+    const colorObj = BOX_COLORS[colorKey] || BOX_COLORS.Amber;
+    
+    // Return the appropriate theme colors
+    return {
+      bg: isDark ? colorObj.dark.bg : colorObj.light.bg,
+      border: isDark ? colorObj.dark.border : colorObj.light.border,
+      text: isDark ? colorObj.dark.text : colorObj.light.text,
+      dark: "" // This can be empty or used for additional dark mode styles
+    };
   };
 
   useEffect(() => {
@@ -229,8 +198,7 @@ export default function TextBox({
   }, []);
 
   const boxColor = getBoxColorClasses(color);
-  // console.log("TextBox Color:", title);
-  // console.log("Rendering TextBox:", boxColor);
+  
   return (
     <div
       data-box-id={id}
@@ -250,38 +218,27 @@ export default function TextBox({
     >
       <div
         onMouseDown={(e) => onMouseDown(e, id)}
-        className={`group relative rounded-xl border-2 bg-gradient-to-br  ${
-          boxColor.bg
-        } ${boxColor.dark}
-         
-          shadow-sm p-1.5
-          ${
-            isSelected
-              ? `${boxColor.border} shadow-md`
-              : "border-neutral-200/80 hover:shadow-xl "
-          }`}
+        className={`group relative rounded-xl border-2 shadow-sm p-1.5 ${
+          isSelected
+            ? "shadow-md"
+            : "hover:shadow-xl"
+        }`}
         style={{
           width: `${boxWidth}px`,
           minHeight: "60px",
           maxHeight: `${MAX_HEIGHT}px`,
           overflow: "hidden",
+          backgroundColor: boxColor.bg,
+          borderColor: isSelected ? boxColor.border : `${boxColor.border}80`,
+          color: boxColor.text,
         }}
       >
         {/* Textarea container */}
         <div className="relative">
           {title && (
             <div
-              className={`
-      w-full
-      text-xl
-      font-semibold
-      mb-1
-      px-2
-      py-0.5
-      bg-transparent
-      truncate
-      ${boxColor.text}
-    `}
+              className="w-full text-xl font-semibold mb-1 px-2 py-0.5 bg-transparent truncate"
+              style={{ color: boxColor.text }}
               title={title} // Shows full title on hover
             >
               {title.split("\n")[0]}
@@ -299,20 +256,9 @@ export default function TextBox({
             onChange={(e) => handleTextChange(id, e.target.value)}
             onFocus={() => onFocus(id)}
             onBlur={() => onBlur?.(id)}
+            onKeyDown={(e) => onTextKeyDown?.(e, id)}
             placeholder="Start typing..."
-            className={`
-      w-full
-      resize-none
-      bg-transparent
-      px-1.5
-      py-0.5
-      focus:outline-none
-      overflow-hidden
-      dark:text-neutral-100
-      placeholder:text-neutral-400
-      dark:placeholder:text-neutral-500
-      ${boxColor.bg} ${boxColor.border} ${boxColor.text} ${boxColor.dark}
-    `}
+            className="w-full resize-none bg-transparent px-1.5 py-0.5 focus:outline-none overflow-hidden placeholder:text-current placeholder:opacity-40"
             style={{
               height: `${Math.max(
                 24,
@@ -326,6 +272,7 @@ export default function TextBox({
               overflowWrap: "break-word",
               overflowY: "hidden",
               resize: "none",
+              color: boxColor.text,
             }}
             onInput={handleInput}
           />
@@ -342,17 +289,13 @@ export default function TextBox({
         >
           <svg
             viewBox="0 0 16 16"
-            className="h-4 w-4 text-neutral-400"
+            className="h-4 w-4"
+            style={{ color: boxColor.border }}
             fill="currentColor"
           >
             <path d="M14 14H12V12H14V14ZM14 10H12V8H14V10ZM10 14H8V12H10V14ZM14 6H12V4H14V6ZM10 10H8V8H10V10ZM6 14H4V12H6V14Z" />
           </svg>
         </div>
-
-        {/* Selection indicator */}
-        {/* {isSelected && (
-          <div className="absolute -top-1 -left-1 -right-1 -bottom-1 border-2 border-amber-500/30 rounded-xl pointer-events-none" />
-        )} */}
       </div>
     </div>
   );

@@ -18,15 +18,12 @@ export default function ThemeToggle() {
 
   return (
     <div className="flex w-full items-center gap-2">
-      {/* Icon */}
       <Moon className="h-4 w-4 dark:text-neutral-400" />
 
-      {/* Label */}
       <span className="flex-1 text-sm dark:text-neutral-300">
         Dark mode
       </span>
 
-      {/* Switch */}
       <button
         onClick={() => setTheme(isDark ? 'light' : 'dark')}
         role="switch"

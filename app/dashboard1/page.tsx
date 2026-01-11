@@ -12,6 +12,8 @@ import { useFolderContext } from "../components/FolderContext";
 import { useZoomContext } from "../components/zoomContext";
 import ZoomControls from "./zoomController";
 import { v4 as uuidv4 } from "uuid";
+import { useTheme } from "next-themes";
+import { BOX_COLORS } from "./boxColors";
 
 interface TextBox {
   id: string;
@@ -23,54 +25,18 @@ interface TextBox {
   width: number;
   height: number;
 }
-const BOX_COLORS = [
-  {
-    name: "Amber",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    text: "text-amber-900",
-    dark: "dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100",
-  },
-  {
-    name: "Red",
-    bg: "bg-red-50",
-    border: "border-red-200",
-    text: "text-red-900",
-    dark: "dark:bg-red-950 dark:border-red-800 dark:text-red-100",
-  },
-  {
-    name: "Blue",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    text: "text-blue-900",
-    dark: "dark:bg-blue-950 dark:border-blue-800 dark:text-blue-100",
-  },
-  {
-    name: "Green",
-    bg: "bg-green-50",
-    border: "border-green-200",
-    text: "text-green-900",
-    dark: "dark:bg-green-950 dark:border-green-800 dark:text-green-100",
-  },
-  {
-    name: "Purple",
-    bg: "bg-purple-50",
-    border: "border-purple-200",
-    text: "text-purple-900",
-    dark: "dark:bg-purple-950 dark:border-purple-800 dark:text-purple-100",
-  },
-  {
-    name: "Pink",
-    bg: "bg-pink-50",
-    border: "border-pink-200",
-    text: "text-pink-900",
-    dark: "dark:bg-pink-950 dark:border-pink-800 dark:text-pink-100",
-  },
-];
+
+// Helper function to get color options as an array
+const getColorOptions = () => {
+  return Object.entries(BOX_COLORS).map(([name, colors]) => ({
+    name,
+    ...colors
+  }));
+};
 
 export default function Canvas() {
   const { data: session, status } = useSession();
-  const { isOpen: isFolderOpne } = useFolderContext();
+  const { isOpen: isFolderOpen } = useFolderContext();
   const {
     zoom,
     setZoom,
@@ -102,20 +68,22 @@ export default function Canvas() {
   const [isResizing, setIsResizing] = useState(false);
   const router = useRouter();
   const titleInputRef = useRef<HTMLTextAreaElement | null>(null);
-  // const [loading, setLoading] = useState(true);
   const { currentFolder, loading: foldersLoading } = useFolderContext();
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isResizingRef = useRef(false);
 
-   // Track different loading states
-   const [appState, setAppState] = useState<'loading' | 'ready' | 'error'>('loading');
-   const [error, setError] = useState<string | null>(null);
-  // const currentFolder = useFolderContext().currentFolder;
+  // Track different loading states
+  const [appState, setAppState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [error, setError] = useState<string | null>(null);
   
-  // console.log("session" + session?.user.)
-
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  
+  // Get color options array
+  const colorOptions = getColorOptions();
+  
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -136,8 +104,6 @@ export default function Canvas() {
       setAppState('ready');
     }
   }, [status, router, foldersLoading, currentFolder]);
-
-  console.log("Current Folder ID:", currentFolder);
 
   useEffect(() => {
     if (appState !== 'ready' || !currentFolder?.id) {
@@ -230,26 +196,6 @@ export default function Canvas() {
     });
   };
 
-  // const handleResizeMouseDown = (e: React.MouseEvent, id: string) => {
-  //   if (e.button !== 0) return;
-  //   e.stopPropagation();
-  //   e.preventDefault();
-  //   isResizingRef.current = true;
-
-  //   setIsResizing(true);
-
-  //   const box = textBoxes.find((b) => b.id === id);
-  //   if (!box) return;
-
-  //   setResizingId(id);
-  //   setResizeStart({
-  //     x: e.clientX,
-  //     y: e.clientY,
-  //     width: box.width,
-  //     height: box.height,
-  //   });
-  // };
-
   // Handle panning start
   const handleSpaceDrag = (e: React.MouseEvent) => {
     if (e.button === 1 || e.button === 2) {
@@ -265,7 +211,7 @@ export default function Canvas() {
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    if (isFolderOpne) {
+    if (isFolderOpen) {
       return;
     }
     e.preventDefault();
@@ -452,9 +398,11 @@ export default function Canvas() {
 
   const editingBox = textBoxes.find((b) => b.id === editingId);
   const gridSize = 20 * zoom;
+  
+  // FIXED: Get the correct color for the editing box
   const editingBoxColor = editingBox
-    ? BOX_COLORS.find((c) => c.name === editingBox.color)
-    : BOX_COLORS[0];
+    ? BOX_COLORS[editingBox.color as keyof typeof BOX_COLORS]
+    : BOX_COLORS.Amber;
 
   useEffect(() => {
     const el = titleInputRef.current;
@@ -464,18 +412,19 @@ export default function Canvas() {
     el.style.height = el.scrollHeight + "px";
   }, [editingBox?.title]);
 
-  // if (appState === 'loading') {
-  //   return (
-  //     <div className="flex h-screen items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-  //         <p className="mt-4 text-neutral-600 dark:text-neutral-400">
-  //           Loading workspace...
-  //         </p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  // Loading UI
+  if (appState === 'loading') {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
+          <p className="mt-4 text-neutral-600 dark:text-neutral-400">
+            Loading workspace...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Error UI
   if (error) {
@@ -496,90 +445,13 @@ export default function Canvas() {
   }
 
   return (
-    <div className="flex h-[870px] rounded-lg flex-col bg-neutral-100 dark:bg-neutral-900">
-      {/* <div
-        className="
-    flex items-start justify-between
-    border-b border-neutral-200/40 dark:border-neutral-700/40
-    px-4 py-3
-  "
-        style={{
-          backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
-          backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-sm font-bold text-white shadow-sm">
-            O
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-neutral-800 dark:text-white">
-              Olai Canvas
-            </span>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              Modern note-keeping space
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1 rounded-lg border border-neutral-200 dark:border-neutral-700 p-1 bg-white dark:bg-neutral-800">
-            <button
-              onClick={zoomOut}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 dark:text-neutral-400 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-800 dark:hover:text-white"
-              title="Zoom Out"
-            >
-              <ZoomOut className="h-3.5 w-3.5" />
-            </button>
-            <div className="min-w-[52px] text-center">
-              <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                {Math.round(zoom * 100)}%
-              </span>
-            </div>
-            <button
-              onClick={zoomIn}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 dark:text-neutral-400 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-800 dark:hover:text-white"
-              title="Zoom In"
-            >
-              <ZoomIn className="h-3.5 w-3.5" />
-            </button>
-            <div className="h-4 w-px bg-neutral-300 dark:bg-neutral-600 mx-1" />
-            <button
-              onClick={resetZoom}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-600 dark:text-neutral-400 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-800 dark:hover:text-white"
-              title="Reset Zoom"
-            >
-              <Maximize2 className="h-3.5 w-3.5" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <div className="text-xs text-neutral-600 dark:text-neutral-400">
-                <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                  {session?.user.name?.split(" ")[0] || "User"}
-                </span>
-                <span className="mx-1">•</span>
-                Online
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <NoteSync notes={textBoxes} />
-            </div>
-          </div>
-        </div>
-      </div> */}
-
+    <div className="flex h-[870px] rounded-lg flex-col bg-background">
       {/* Canvas Container */}
       <div className="relative flex-1 overflow-hidden">
-        {/* Background Grid - FIXED */}
+        {/* Background Grid */}
         <div
           className="absolute bg-dots inset-0"
           style={{
-            // backgroundImage:
-            //   "radial-gradient(circle, rgb(197, 187, 187) 1px, transparent 1px)",
             backgroundSize: `${gridSize}px ${gridSize}px`,
             backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
           }}
@@ -597,14 +469,15 @@ export default function Canvas() {
             isPanning ? "cursor-grabbing" : "cursor-crosshair"
           }`}
         >
-          <div className="mt-10 px-10 justify-between  flex">
+          <div className="mt-10 px-10 justify-between flex">
             <div className="items-start">
               <FolderDropdown />
               <Profile/>
             </div>
             <div className="justify-between flex items-center gap-3">
-              {/* <Profile />
-              <NoteSync notes={textBoxes} folderId={currentFolder.id} />  */}
+              {currentFolder && (
+                <NoteSync notes={textBoxes} folderId={currentFolder.id} />
+              )}
             </div>
           </div>
           <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
@@ -612,6 +485,7 @@ export default function Canvas() {
               <ZoomControls />
             </div>
           </div>
+          
           {/* Text Boxes Container */}
           <div
             style={{
@@ -646,27 +520,10 @@ export default function Canvas() {
                   onTextKeyDown={handleTextKeyDown}
                   onFocus={setSelectedId}
                 />
-
-                {/* Resize handle */}
-                {/* {selectedId === box.id && (
-                  <div
-                    className="absolute bottom-0 right-0 h-4 w-4 cursor-se-resize opacity-50 hover:opacity-100 transition-opacity"
-                      onMouseDown={(e) => { return; handleResizeMouseDown(e, box.id)}
-                    }
-                    onClick={(e) => {
-                      isResizingRef.current = true;
-                      e.stopPropagation();
-                      e.preventDefault();
-                    }}
-                    onMouseUp={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                    }}
-                  ></div>
-                )} */}
               </div>
             ))}
-            {/* Empty state - REMOVED instructions to fix click issue */}
+            
+            {/* Empty state */}
             {textBoxes.length === 0 && (
               <div className="pointer-events-none absolute inset-0 flex items-center mt-40 justify-center">
                 <div className="text-center">
@@ -690,20 +547,11 @@ export default function Canvas() {
         </div>
       </div>
 
-      {/* Status bar - SIMPLIFIED */}
+      {/* Status bar */}
       <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-1 text-xs text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
-        {/* <div>
-          {selectedId
-            ? `Selected box at (${textBoxes
-                .find((b) => b.id === selectedId)
-                ?.x.toFixed(0)}, ${textBoxes
-                .find((b) => b.id === selectedId)
-                ?.y.toFixed(0)})`
-            : "No selection"}
-        </div> */}
         <div className="flex items-center gap-4">
           <span>Boxes: {textBoxes.length}</span>
-          {/* <span>Zoom: {Math.round(zoom * 100)}%</span> */}
+          <span>Zoom: {Math.round(zoom * 100)}%</span>
         </div>
       </div>
 
@@ -714,12 +562,19 @@ export default function Canvas() {
           onClick={closePopover}
         >
           <div
-            className={`relative w-full max-w-2xl mx-4 rounded-xl p-6 shadow-2xl dark:bg-neutral-800 ${editingBoxColor.bg} ${editingBoxColor.border} ${editingBoxColor.text} ${editingBoxColor.dark}`}
+            className="relative w-full max-w-2xl mx-4 rounded-xl p-6 shadow-2xl"
+            style={{
+              backgroundColor: isDark ? editingBoxColor.dark.bg : editingBoxColor.light.bg,
+              borderColor: isDark ? editingBoxColor.dark.border : editingBoxColor.light.border,
+              color: isDark ? editingBoxColor.dark.text : editingBoxColor.light.text,
+              borderWidth: '1px',
+              borderStyle: 'solid',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={closePopover}
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 transition-colors  hover:text-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-neutral-200"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-current opacity-60 transition-opacity hover:opacity-100"
             >
               ✕
             </button>
@@ -740,18 +595,18 @@ export default function Canvas() {
                 placeholder="Add a title..."
                 rows={1}
                 className="
-    w-full
-    mb-3
-    bg-transparent
-    text-lg
-    font-semibold
-    placeholder:opacity-40
-    focus:outline-none
-    resize-none
-    leading-tight
-    break-words
-    whitespace-pre-wrap
-  "
+                  w-full
+                  mb-3
+                  bg-transparent
+                  text-lg
+                  font-semibold
+                  placeholder:opacity-40
+                  focus:outline-none
+                  resize-none
+                  leading-tight
+                  break-words
+                  whitespace-pre-wrap
+                "
                 style={{ overflow: "hidden" }}
                 onInput={(e) => {
                   const el = e.currentTarget;
@@ -826,14 +681,15 @@ export default function Canvas() {
                   handleTextChange(editingId, finalText);
                 }}
                 placeholder="Type your note here..."
-                className="min-h-[300px] w-full resize-none bg-transparent text-base placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
+                className="min-h-[300px] w-full resize-none bg-transparent text-base placeholder:text-current placeholder:opacity-40 focus:outline-none"
                 maxLength={1000}
               />
             </div>
+            
             <div className="mt-4 border-t border-current opacity-20 pt-4">
               <p className="text-xs font-semibold mb-2 opacity-60">Color</p>
               <div className="flex gap-2 flex-wrap">
-                {BOX_COLORS.map((colorOption) => (
+                {colorOptions.map((colorOption) => (
                   <button
                     key={colorOption.name}
                     onClick={() =>
@@ -845,18 +701,9 @@ export default function Canvas() {
                         : "border-current opacity-40 hover:opacity-60"
                     }`}
                     style={{
-                      backgroundColor:
-                        colorOption.name === "Amber"
-                          ? "#fef3c7"
-                          : colorOption.name === "Red"
-                          ? "#fee2e2"
-                          : colorOption.name === "Blue"
-                          ? "#dbeafe"
-                          : colorOption.name === "Green"
-                          ? "#dcfce7"
-                          : colorOption.name === "Purple"
-                          ? "#f3e8ff"
-                          : "#fce7f3",
+                      backgroundColor: isDark 
+                        ? colorOption.dark.bg 
+                        : colorOption.light.bg,
                     }}
                     title={colorOption.name}
                   />
@@ -864,14 +711,20 @@ export default function Canvas() {
               </div>
             </div>
 
-            <div className="mt-3 flex items-center justify-between border-t border-neutral-200 px-2 pt-2 dark:border-neutral-700">
-              <span className="text-xs text-neutral-400">
+            <div className="mt-3 flex items-center justify-between border-t border-current opacity-20 px-2 pt-2">
+              <span className="text-xs opacity-60">
                 Press Escape to close
               </span>
 
               <button
                 onClick={closePopover}
-                className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600"
+                className="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: isDark 
+                    ? editingBoxColor.dark.border 
+                    : editingBoxColor.light.border,
+                  color: isDark ? editingBoxColor.dark.text : editingBoxColor.light.text,
+                }}
               >
                 Done
               </button>
