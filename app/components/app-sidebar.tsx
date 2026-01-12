@@ -53,7 +53,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     fetchFolders();
   }, []);
 
-  console.log(navMain);
+  // console.log(navMain);
 
   const { data: session } = useSession();
   // console.log(session);
@@ -81,23 +81,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       //   plan: "Free",
       // },
     ],
-    projects: [
-      {
-        name: "Design Engineering",
-        url: "#",
-        icon: Frame,
-      },
-      {
-        name: "Sales & Marketing",
-        url: "#",
-        icon: PieChart,
-      },
-      {
-        name: "Travel",
-        url: "#",
-        icon: Map,
-      },
-    ],
+    // projects: [
+    //   {
+    //     name: "Design Engineering",
+    //     url: "#",
+    //     icon: Frame,
+    //   },
+    //   {
+    //     name: "Sales & Marketing",
+    //     url: "#",
+    //     icon: PieChart,
+    //   },
+    //   {
+    //     name: "Travel",
+    //     url: "#",
+    //     icon: Map,
+    //   },
+    // ],
   };
 
   return (

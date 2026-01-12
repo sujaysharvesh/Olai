@@ -471,8 +471,8 @@ export default function Canvas() {
         >
           <div className="mt-10 px-10 justify-between flex">
             <div className="items-start">
-              <FolderDropdown />
-              <Profile/>
+              {/* <FolderDropdown /> */}
+              {/* <Profile/> */}
             </div>
             <div className="justify-between flex items-center gap-3">
               {currentFolder && (
@@ -481,7 +481,7 @@ export default function Canvas() {
             </div>
           </div>
           <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
-            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 backdrop-blur-sm">
+            <div className=" ">
               <ZoomControls />
             </div>
           </div>
@@ -548,10 +548,10 @@ export default function Canvas() {
       </div>
 
       {/* Status bar */}
-      <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-1 text-xs text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
+      <div className="flex items-center justify-between border-t bg-background px-4 py-1 text-xs text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
         <div className="flex items-center gap-4">
           <span>Boxes: {textBoxes.length}</span>
-          <span>Zoom: {Math.round(zoom * 100)}%</span>
+          {/* <span>Zoom: {Math.round(zoom * 100)}%</span> */}
         </div>
       </div>
 
@@ -686,7 +686,7 @@ export default function Canvas() {
               />
             </div>
             
-            <div className="mt-4 border-t border-current opacity-20 pt-4">
+            <div className="mt-4 border-t border-current  pt-4">
               <p className="text-xs font-semibold mb-2 opacity-60">Color</p>
               <div className="flex gap-2 flex-wrap">
                 {colorOptions.map((colorOption) => (
@@ -698,7 +698,7 @@ export default function Canvas() {
                     className={`w-6 h-6 rounded-full border-2 transition-all ${
                       editingBox.color === colorOption.name
                         ? "border-current ring-2 ring-offset-1"
-                        : "border-current opacity-40 hover:opacity-60"
+                        : "border-current hover:opacity-60"
                     }`}
                     style={{
                       backgroundColor: isDark 
@@ -711,24 +711,24 @@ export default function Canvas() {
               </div>
             </div>
 
-            <div className="mt-3 flex items-center justify-between border-t border-current opacity-20 px-2 pt-2">
+            {/* <div className="mt-3 flex items-center justify-between border-t border-current  px-2 pt-2">
               <span className="text-xs opacity-60">
                 Press Escape to close
               </span>
 
               <button
                 onClick={closePopover}
-                className="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                style={{
-                  backgroundColor: isDark 
-                    ? editingBoxColor.dark.border 
-                    : editingBoxColor.light.border,
-                  color: isDark ? editingBoxColor.dark.text : editingBoxColor.light.text,
-                }}
+                className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600"
+                // style={{
+                //   backgroundColor: isDark 
+                //     ? editingBoxColor.dark.border 
+                //     : editingBoxColor.light.border,
+                //   color: isDark ? editingBoxColor.dark.text : editingBoxColor.light.text,
+                // }}
               >
                 Done
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       )}
